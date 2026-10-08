@@ -1,0 +1,15 @@
+{
+  "productName": "Flight Deck",
+  "userName": "Test User",
+  "userEmail": "test@example.com",
+  "userSlackId": "U0TEST",
+  "orgDomain": "example.com",
+  "timezone": "America/New_York",
+  "workHoursPerDay": 8,
+  "port": 3999,
+  "activeProjects": ["Alpha"],
+  "excludeKeywords": [],
+  "claudePull": { "enabled": false },
+  "refresh": { "everyMinutes": 60, "quietHours": [20, 7] },
+  "ageRedDays": 3
+}

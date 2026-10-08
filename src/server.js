@@ -13,6 +13,8 @@ import { mountMcp } from './mcp/tools.js';
 import { refreshRouter } from './routes/refresh.js';
 import { askClaudeRouter } from './routes/ask-claude.js';
 import warpLogRouter from './routes/warp-log.js';
+import { startScheduler } from './scheduler.js';
+import { runRefresh } from './pipeline/index.js';
 initDb();
 
 async function findFreePort(start) {
@@ -53,4 +55,11 @@ app.listen(port, '127.0.0.1', () => {
     port, pid: process.pid, started_at: new Date().toISOString()
   }, null, 2));
   console.log(`flight-deck listening on http://localhost:${port}`);
+});
+
+startScheduler({
+  everyMinutes: config.refresh.everyMinutes,
+  quietHours: config.refresh.quietHours,
+  timezone: config.timezone,
+  run: () => runRefresh(),
 });

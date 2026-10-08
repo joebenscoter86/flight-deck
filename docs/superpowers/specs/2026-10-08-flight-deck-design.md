@@ -55,7 +55,7 @@ MCP). Changes:
 
 ## 3a. Sources: three core, plus whatever is already connected
 
-Added 2026-10-08 after Joe's note on audience. Status: **proposed, Joe to confirm.**
+Added 2026-10-08 after Joe's note on audience. Status: confirmed by Joe 2026-10-08 (core three expected, setup carries on without one).
 
 The person installing this is a non-technical knowledge worker on a cold start. Their day is
 Gmail, Slack and Google Calendar, so those are the **core three** and setup expects them. But the

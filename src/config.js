@@ -71,13 +71,21 @@ export const config = {
   userName: user.userName || 'you',
   userEmail: user.userEmail || '',
   userSlackId: user.userSlackId || '',
-  orgDomain: (user.orgDomain || '').toLowerCase(),
+  orgDomain: (user.orgDomain || (user.userEmail || '').split('@')[1] || '').toLowerCase(),
 
   // Behavior
   timezone: user.timezone || 'America/New_York',
   workHoursPerDay: user.workHoursPerDay ?? 8,
   activeProjects: Array.isArray(user.activeProjects) ? user.activeProjects : [],
   excludeKeywords: Array.isArray(user.excludeKeywords) ? user.excludeKeywords : [],
+  // Self-refresh timer. quietHours is [start, end) in the user's timezone, 24-hour.
+  refresh: {
+    everyMinutes: Number(user.refresh?.everyMinutes) > 0 ? Number(user.refresh.everyMinutes) : 60,
+    quietHours: Array.isArray(user.refresh?.quietHours) && user.refresh.quietHours.length === 2
+      ? user.refresh.quietHours.map(Number) : [20, 7],
+  },
+  // An item waiting this many days or more shows its age in red.
+  ageRedDays: Number(user.ageRedDays) > 0 ? Number(user.ageRedDays) : 3,
 
   // Headless-Claude pull (Slack / Gmail / Calendar via your claude.ai connectors)
   claudeBin: process.env.CLAUDE_BIN || user.claudeBin || 'claude',

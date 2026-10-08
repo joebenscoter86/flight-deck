@@ -692,7 +692,7 @@ git commit -m "Open tasks in Claude Desktop via the documented claude://code/new
 
 ### Task 7b: Sources scaffold (core three plus any connected tool)
 
-Added 2026-10-08. Spec section 3a. **Proposed design; confirm with Joe before building.** Steps are an outline, not finished code like the tasks above; write the tests first.
+Added 2026-10-08. Spec section 3a. Steps are an outline, not finished code like the tasks above; write the tests first.
 
 **Files:**
 - Create: `src/sources.js`, `tests/sources.test.js`

@@ -290,7 +290,7 @@ function renderTaskCard(t, tier) {
         ${t.est_minutes ? `<div class="text-[9px] font-bold ${cfg.accentColor} uppercase tracking-tighter mt-3">Est: ${t.est_minutes}m</div>` : ''}
         <div class="flex items-center gap-2 flex-wrap">
           <button class="ask-claude-btn flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-highest transition-all text-[10px] font-bold uppercase tracking-widest">
-            <span class="material-symbols-outlined text-sm">chat_bubble</span> Summon Claude
+            <span class="material-symbols-outlined text-sm">chat_bubble</span> Open in Claude
           </button>
           <button class="copy-prompt-btn flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-highest transition-all text-[10px] font-bold uppercase tracking-widest">
             <span class="material-symbols-outlined text-sm">content_copy</span> Copy Prompt
@@ -309,7 +309,7 @@ function renderTaskCard(t, tier) {
         ${pairedActionControls(t, cfg)}
         <span class="task-text text-sm font-medium flex-grow">${escapeHtml(t.task)}</span>
         <button class="ask-claude-btn flex items-center gap-1 px-2 py-1 rounded border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-highest transition-all text-[9px] font-bold uppercase tracking-widest">
-          <span class="material-symbols-outlined text-xs">chat_bubble</span> Summon Claude
+          <span class="material-symbols-outlined text-xs">chat_bubble</span> Open in Claude
         </button>
         <button class="copy-prompt-btn flex items-center gap-1 px-2 py-1 rounded border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-highest transition-all text-[9px] font-bold uppercase tracking-widest">
           <span class="material-symbols-outlined text-xs">content_copy</span> Copy Prompt
@@ -336,13 +336,13 @@ function renderTaskCard(t, tier) {
   // Standard card: must_do, should_do, could_do
   const isMust = tier === 'must_do';
   return `
-  <div class="task glass-card p-${isMust ? '6' : '5'} ${borderClass} ${cfg.borderColor} shadow-${isMust ? 'lg' : 'md'} transition-all hover:bg-surface-container-high relative ${t.done ? 'done' : ''}" data-id="${t.id}" draggable="true">
+  <div class="task glass-card p-${isMust ? '6' : '5'} ${borderClass} ${cfg.borderColor} shadow-${isMust ? 'lg' : 'md'} transition-all hover:bg-surface-container-high relative ${t.overdue && isMust ? 'overdue-card' : ''} ${t.done ? 'done' : ''}" data-id="${t.id}" draggable="true">
     <div class="card-inner">
       <div class="flex items-start gap-4">
         ${pairedActionControls(t, cfg)}
         <div class="flex-grow">
           <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] font-bold ${cfg.accentColor} uppercase tracking-widest">${escapeHtml(t.project || cfg.label)}</span>
+            <span class="text-[10px] font-bold ${cfg.accentColor} uppercase tracking-widest">${escapeHtml(t.project || cfg.label)}${t.waiting_days > 0 ? `<span class="waiting ${t.overdue ? 'overdue' : ''}">waiting ${t.waiting_days}d</span>` : ''}</span>
             <div class="flex items-center gap-2">
               <div class="task-actions flex gap-1">
                 <button class="block-btn ${cfg.accentColor}/50 hover:text-outline transition-colors" title="Block">
@@ -373,7 +373,7 @@ function renderTaskCard(t, tier) {
             : `<div class="task-notes empty text-xs" contenteditable="true" data-original="">+ add notes</div>`}
           <div class="flex items-center gap-2 flex-wrap">
             <button class="ask-claude-btn flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded border ${cfg.borderColor} ${cfg.accentColor} hover:bg-surface-container-highest transition-all text-[10px] font-bold uppercase tracking-widest">
-              <span class="material-symbols-outlined text-sm">chat_bubble</span> Summon Claude
+              <span class="material-symbols-outlined text-sm">chat_bubble</span> Open in Claude
             </button>
             <button class="copy-prompt-btn flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded border ${cfg.borderColor} ${cfg.accentColor} hover:bg-surface-container-highest transition-all text-[10px] font-bold uppercase tracking-widest">
               <span class="material-symbols-outlined text-sm">content_copy</span> Copy Prompt
@@ -421,6 +421,8 @@ function renderTasks(tasks) {
   for (const tier of tiers) {
     const container = document.querySelector(`.tier[data-tier="${tier}"] .tasks`);
     const subset = live.filter(t => t.priority === tier && !t.done);
+    // Overdue must-dos float to the top; the server's order holds otherwise.
+    if (tier === 'must_do') subset.sort((a, b) => (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0));
     const doneInTier = live.filter(t => t.priority === tier && t.done);
     doneTasks.push(...doneInTier);
 
@@ -830,7 +832,7 @@ document.addEventListener('click', async (e) => {
   try {
     const res = await api(`/api/ask-claude/${id}`, { method: 'POST' });
     window.location.href = res.launch_uri;
-    toast('Opening Claude Code...');
+    toast('Opening Claude...');
   } catch (err) {
     toast('Failed to build prompt. Check server logs.');
   }

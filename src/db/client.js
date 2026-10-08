@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from '../config.js';
+import { waitingDays } from '../age.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -124,7 +125,10 @@ export function listTasks({ date, filter = 'open' }) {
       sort_order ASC NULLS LAST,
       id ASC
   `;
-  return getDb().prepare(sql).all(date);
+  return getDb().prepare(sql).all(date).map(t => {
+    const waiting_days = waitingDays(t, date);
+    return { ...t, waiting_days, overdue: waiting_days >= config.ageRedDays };
+  });
 }
 
 export function getTask(id) {

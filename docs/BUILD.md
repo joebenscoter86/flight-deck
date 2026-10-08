@@ -29,7 +29,7 @@ No single session finishes this. Before you start, read the Status table below a
 
 | Task | State | Notes |
 |---|---|---|
-| 0. Phase 0 manual tests | Step 1 blocked | CLI sign-in on Joe's Mac was expired, so the connector check could not run. See `docs/decisions/2026-10-08-phase-0-results.md`. Joe signs in, then rerun. |
+| 0. Phase 0 manual tests | Step 1 PASS | Headless pull sees Gmail and Calendar connectors; server mode goes ahead. Slack is not authorized on Joe's account. Steps 2 to 5 open. See `docs/decisions/2026-10-08-phase-0-results.md`. |
 | 1. Rename to Flight Deck | Done | GitHub repo renamed to `joebenscoter86/flight-deck` on 2026-10-08. |
 | 2. Test harness | Done | `npm test` runs `node --test tests/*.test.js` (a bare `tests/` directory argument fails on current Node). Installs and runs on Node 25. |
 | 3. Hourly refresh | Done | Checked live with a 1-minute interval. What the pull does when the CLI is signed out is not handled; see Known plan fixes 6. |
@@ -52,3 +52,5 @@ Found on review of the plan against the code (2026-10-08). Apply these when you 
 4. Line numbers in the plan drift by about ten lines in places. Match on the code, not the number.
 5. **Task 5, age of a brand-new item.** `waitingDays` counts from when Flight Deck first saw an item, so a two-week-old Slack message found today shows 0 days and is not red. The reel shows exactly that message in red on the first morning. Fix in the pull prompt when doing Task 4: have each Slack and Gmail POST include `"original_date"` set to the date the message was sent (the tasks API already accepts it). Also, the first-ever pull only looks back 24 hours in Slack; give the first run a longer window (two weeks) so old unanswered messages are found at all.
 6. **Signed-out CLI.** The pull fails with "OAuth session expired" when the CLI's sign-in lapses (seen on Joe's Mac, Phase 0 results). Detect that in `runClaudePull`, surface it in the UI in plain words, and have the runbook confirm the CLI is signed in. Not in the plan yet; add as a task once Phase 0 Step 2 is known.
+7. **Pull prompt hard-codes stale tool names** (`gcal_list_events`, `gmail_search_messages`, `slack_search_public_and_private`). Current connector tools are `mcp__claude_ai_Gmail__search_threads` and the like. Rewrite the steps to describe the action and let Claude choose the tool. Do this with Task 7b, which restructures the prompt anyway.
+8. **Lock down the pull session.** It runs with `bypassPermissions` and holds send, reply, trash and delete tools while reading untrusted email. Restrict it to read tools plus the localhost write-back before this ships to anyone. Treat as a release blocker.

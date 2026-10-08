@@ -8,7 +8,7 @@ import { emit } from '../sse.js';
 import { config } from '../config.js';
 
 export function buildMcpServer() {
-  const server = new McpServer({ name: 'hit-list', version: '0.1.0' });
+  const server = new McpServer({ name: 'flight-deck', version: '0.1.0' });
 
   server.tool('todo_list_tasks',
     'List tasks for a date.',

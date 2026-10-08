@@ -1,4 +1,4 @@
-/* === Hit List - App Logic === */
+/* === Flight Deck - App Logic === */
 
 async function api(path, opts = {}) {
   const r = await fetch(path, {
@@ -981,7 +981,7 @@ document.querySelectorAll('section[id]').forEach(section => {
   `;
 
   // Fragment shader: same plasma-grid core as the original, palette-swapped
-  // for Hit List. Line color = secondary-container magenta (#fe00fe).
+  // for Flight Deck. Line color = secondary-container magenta (#fe00fe).
   // Backgrounds = very dark surface tones so the shader does not drown the UI.
   const fsSource = `
     precision highp float;

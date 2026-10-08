@@ -94,7 +94,7 @@ then ask the user if they want you to: (a) go ahead with that, (b) dig up
 more context first, or (c) do something else entirely.
 
 When the user is done working this task, offer to update or close it via the
-hit-list MCP server (todo_update_task to append notes, todo_mark_done
+flight-deck MCP server (todo_update_task to append notes, todo_mark_done
 to complete it). Keep the to-do list current.`;
 }
 

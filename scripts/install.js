@@ -4,20 +4,21 @@ import path from 'node:path';
 import os from 'node:os';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { config } from '../src/config.js';
 
 const HOME = os.homedir();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const APP_DIR = path.resolve(__dirname, '..');
 const NODE_BIN = process.execPath;
 const SERVER_JS = path.join(APP_DIR, 'src', 'server.js');
-const PLIST_PATH = path.join(HOME, 'Library', 'LaunchAgents', 'com.hitlist.server.plist');
-const STATE_DIR = path.join(HOME, '.hit-list');
+const PLIST_PATH = path.join(HOME, 'Library', 'LaunchAgents', 'com.flightdeck.server.plist');
+const STATE_DIR = config.stateDir;
 
 const plist = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>com.hitlist.server</string>
+  <key>Label</key><string>com.flightdeck.server</string>
   <key>ProgramArguments</key>
   <array>
     <string>${NODE_BIN}</string>
@@ -52,6 +53,6 @@ if (fs.existsSync(statePath)) {
   const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
   console.log(`Server is up on http://localhost:${state.port} (pid ${state.pid})`);
 } else {
-  console.error('Server did not write state.json. Check ~/.hit-list/server.log');
+  console.error('Server did not write state.json. Check ' + path.join(STATE_DIR, 'server.log'));
   process.exit(1);
 }

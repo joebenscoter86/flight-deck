@@ -52,5 +52,5 @@ app.listen(port, '127.0.0.1', () => {
   fs.writeFileSync(config.statePath, JSON.stringify({
     port, pid: process.pid, started_at: new Date().toISOString()
   }, null, 2));
-  console.log(`hit-list listening on http://localhost:${port}`);
+  console.log(`flight-deck listening on http://localhost:${port}`);
 });

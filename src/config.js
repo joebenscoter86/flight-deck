@@ -8,17 +8,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
 
 // State (SQLite DB, server logs, the port/PID file) lives here, outside the repo.
-const STATE_DIR = path.join(HOME, '.hit-list');
+// FLIGHT_DECK_STATE_DIR overrides it (tests use a temp dir). An existing ~/.hit-list
+// from the Hit List era is honored so an in-place upgrade keeps its data.
+const LEGACY_STATE_DIR = path.join(HOME, '.hit-list');
+const STATE_DIR = process.env.FLIGHT_DECK_STATE_DIR
+  || (fs.existsSync(LEGACY_STATE_DIR) && !fs.existsSync(path.join(HOME, '.flight-deck'))
+      ? LEGACY_STATE_DIR
+      : path.join(HOME, '.flight-deck'));
 fs.mkdirSync(STATE_DIR, { recursive: true });
 
 // Resolve the config file. Precedence:
-//   1. HIT_LIST_CONFIG env var (absolute path)
-//   2. ~/.hit-list/config.json
+//   1. FLIGHT_DECK_CONFIG env var (absolute path)
+//   2. ~/.flight-deck/config.json
 //   3. <repo root>/config.json
 // Copy config.example.json to one of these and fill it in. See README.md.
 function resolveConfigPath() {
   const candidates = [
-    process.env.HIT_LIST_CONFIG,
+    process.env.FLIGHT_DECK_CONFIG,
     path.join(STATE_DIR, 'config.json'),
     path.join(REPO_ROOT, 'config.json'),
   ].filter(Boolean);
@@ -33,7 +39,7 @@ function loadUserConfig() {
   if (!p) {
     throw new Error(
       'No config.json found. Copy config.example.json to config.json ' +
-      '(in the repo root or ~/.hit-list/) and fill it in. See README.md.'
+      '(in the repo root or ~/.flight-deck/) and fill it in. See README.md.'
     );
   }
   try {
@@ -59,7 +65,7 @@ export const config = {
 
   // Server
   defaultPort: user.port || 3847,
-  productName: user.productName || 'Hit List',
+  productName: user.productName || 'Flight Deck',
 
   // Who you are
   userName: user.userName || 'you',

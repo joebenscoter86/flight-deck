@@ -1,8 +1,8 @@
-# Hit List
+# Flight Deck
 
 A local, single-user daily to-do dashboard that pulls your day together from the tools you already use, and gives Claude two-way access to the same list over MCP.
 
-Every morning you hit **Refresh** and Hit List assembles today's list from:
+Every morning you hit **Refresh** and Flight Deck assembles today's list from:
 
 - **Google Calendar** (today's meetings, plus auto-generated prep tasks)
 - **Slack** (DMs, @mentions, and threads you haven't replied to)
@@ -21,23 +21,23 @@ There is a second page, the **Warp Log**, that shows where your time actually we
 
 ## How it works
 
-Hit List is a single Node.js process that runs:
+Flight Deck is a single Node.js process that runs:
 
 - an **Express REST API** and serves the web UI,
 - an **MCP server** (HTTP transport) on the same port, and
 - the **refresh pipeline** that gathers your data.
 
-Everything is local. It listens on `127.0.0.1` only, never on the network. Your data stays on your machine in a SQLite file at `~/.hit-list/todo.db`.
+Everything is local. It listens on `127.0.0.1` only, never on the network. Your data stays on your machine in a SQLite file at `~/.flight-deck/todo.db`.
 
 ### Two ways it reaches your data
 
 1. **Direct API (native):** GuideCX and Fathom are called directly from Node using API tokens you provide. These are optional; leave them disabled if you don't use them.
 
-2. **Via Claude connectors (headless):** Slack, Gmail, and Google Calendar are pulled by shelling out to a headless `claude -p` session that uses **your existing [claude.ai connectors](https://support.anthropic.com/en/articles/11175166-about-connectors)**. This means you do **not** have to register a custom OAuth app with your Slack/Google admins. If you already use the Slack, Gmail, and Google Calendar connectors in Claude, Hit List reuses them. The headless session writes results back into Hit List over HTTP.
+2. **Via Claude connectors (headless):** Slack, Gmail, and Google Calendar are pulled by shelling out to a headless `claude -p` session that uses **your existing [claude.ai connectors](https://support.anthropic.com/en/articles/11175166-about-connectors)**. This means you do **not** have to register a custom OAuth app with your Slack/Google admins. If you already use the Slack, Gmail, and Google Calendar connectors in Claude, Flight Deck reuses them. The headless session writes results back into Flight Deck over HTTP.
 
 ```
    Browser tab (Web UI) ─HTTP─┐
-                              ├─►  Node process  ──►  SQLite (~/.hit-list/todo.db)
+                              ├─►  Node process  ──►  SQLite (~/.flight-deck/todo.db)
    Claude Code (MCP) ────MCP──┘        │
                                        ├─ GuideCX API   (direct)
                                        ├─ Fathom API    (direct)
@@ -54,15 +54,15 @@ Everything is local. It listens on `127.0.0.1` only, never on the network. Your 
 - **[Claude Code](https://claude.com/claude-code)** installed, **only if** you want the Slack / Gmail / Calendar pull. You also need the Slack, Gmail, and Google Calendar connectors enabled in your Claude account.
 - A **GuideCX API token** and/or a **Fathom API key**, only if you want those sources.
 
-None of the integrations are required. With all of them off, Hit List is still a fast local to-do app with an MCP interface and a time dashboard.
+None of the integrations are required. With all of them off, Flight Deck is still a fast local to-do app with an MCP interface and a time dashboard.
 
 ---
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/joebenscoter86/hit_list.git hit-list
-cd hit-list
+git clone https://github.com/joebenscoter86/flight-deck.git flight-deck
+cd flight-deck
 npm install
 
 # create your config
@@ -86,10 +86,10 @@ npm run uninstall:agent
 
 ## Configuration
 
-Copy `config.example.json` to `config.json` and edit it. The file is git-ignored because it can hold secrets. Hit List looks for it in this order:
+Copy `config.example.json` to `config.json` and edit it. The file is git-ignored because it can hold secrets. Flight Deck looks for it in this order:
 
-1. `$HIT_LIST_CONFIG` (an absolute path you set)
-2. `~/.hit-list/config.json`
+1. `$FLIGHT_DECK_CONFIG` (an absolute path you set)
+2. `~/.flight-deck/config.json`
 3. `<repo>/config.json`
 
 | Field | What it's for |
@@ -101,7 +101,7 @@ Copy `config.example.json` to `config.json` and edit it. The file is git-ignored
 | `orgDomain` | Your email domain (e.g. `acme.com`). Used to tag Fathom action items as "teammate" vs "external". |
 | `timezone` | IANA timezone (e.g. `America/New_York`). Determines which calendar day "today" is. |
 | `workHoursPerDay` | Used to compute available hours (workday minus meetings minus a 30-min buffer). |
-| `port` | Preferred port. If busy, the server walks up until it finds a free one and records the real port in `~/.hit-list/state.json`. |
+| `port` | Preferred port. If busy, the server walks up until it finds a free one and records the real port in `~/.flight-deck/state.json`. |
 | `activeProjects` | Names of the projects you care about. Used to match GuideCX projects, tag tasks, and generate meeting prep. |
 | `excludeKeywords` | Task names matching any of these (case-insensitive) are never surfaced. Leave `[]` for none. |
 | `claudePull.enabled` | Turn the headless Slack/Gmail/Calendar pull on or off. |
@@ -125,13 +125,13 @@ Copy `config.example.json` to `config.json` and edit it. The file is git-ignored
 
 ### Connecting Slack, Gmail, and Google Calendar
 
-These are **not** configured in Hit List directly. Instead:
+These are **not** configured in Flight Deck directly. Instead:
 
 1. Install [Claude Code](https://claude.com/claude-code) and sign in.
 2. Enable the **Slack**, **Gmail**, and **Google Calendar** connectors in your Claude account.
 3. Make sure `claude` runs from your terminal (or set `claudeBin` to its full path).
 
-When you hit Refresh, Hit List launches a short headless Claude session that uses those connectors to gather your items and write them back. The first run may take 30 to 60 seconds.
+When you hit Refresh, Flight Deck launches a short headless Claude session that uses those connectors to gather your items and write them back. The first run may take 30 to 60 seconds.
 
 ---
 
@@ -140,10 +140,10 @@ When you hit Refresh, Hit List launches a short headless Claude session that use
 Register the MCP server with Claude Code so Claude can read and write your list:
 
 ```bash
-claude mcp add --transport http hit-list http://localhost:3847/mcp
+claude mcp add --transport http flight-deck http://localhost:3847/mcp
 ```
 
-(Use the port from `~/.hit-list/state.json` if you changed it or the default was busy.)
+(Use the port from `~/.flight-deck/state.json` if you changed it or the default was busy.)
 
 Tools Claude gets:
 
@@ -180,21 +180,21 @@ npm start                    # run in the foreground
 npm run dev                  # run with auto-reload
 
 # macOS launchd service:
-launchctl unload ~/Library/LaunchAgents/com.hitlist.server.plist   # stop
-launchctl load   ~/Library/LaunchAgents/com.hitlist.server.plist   # start
-tail -f ~/.hit-list/server.log                                     # logs
+launchctl unload ~/Library/LaunchAgents/com.flightdeck.server.plist   # stop
+launchctl load   ~/Library/LaunchAgents/com.flightdeck.server.plist   # start
+tail -f ~/.flight-deck/server.log                                     # logs
 ```
 
-The headless-pull transcript is logged to `~/.hit-list/claude-pull.log` if you need to debug what the Slack/Gmail/Calendar step did.
+The headless-pull transcript is logged to `~/.flight-deck/claude-pull.log` if you need to debug what the Slack/Gmail/Calendar step did.
 
 ---
 
 ## Troubleshooting
 
 - **"No config.json found"** on startup: copy `config.example.json` to `config.json` and fill it in.
-- **Refresh finds no Slack/Gmail/Calendar items:** confirm `claude` runs from your shell, the connectors are enabled in your Claude account, and `claudePull.enabled` is `true`. Check `~/.hit-list/claude-pull.log`.
+- **Refresh finds no Slack/Gmail/Calendar items:** confirm `claude` runs from your shell, the connectors are enabled in your Claude account, and `claudePull.enabled` is `true`. Check `~/.flight-deck/claude-pull.log`.
 - **GuideCX/Fathom return nothing:** confirm `enabled` is `true` and the token/key is present (in config or env). Confirm `activeProjects` names actually match your GuideCX project names.
-- **MCP tools don't show up in Claude:** confirm the server is running and you registered the correct port (see `~/.hit-list/state.json`).
+- **MCP tools don't show up in Claude:** confirm the server is running and you registered the correct port (see `~/.flight-deck/state.json`).
 
 ---
 

@@ -1,6 +1,6 @@
-# Hit List: setup runbook for an AI agent
+# Flight Deck: setup runbook for an AI agent
 
-You are helping a user set up **Hit List**, a local daily to-do dashboard, on their machine. Read `README.md` for full context. This file is your interactive runbook. Work through it with the user, one step at a time. Confirm each step before moving on. Do not put real secrets into any file that is committed to git (`config.json` is git-ignored; keep it that way).
+You are helping a user set up **Flight Deck**, a local daily to-do dashboard, on their machine. Read `README.md` for full context. This file is your interactive runbook. Work through it with the user, one step at a time. Confirm each step before moving on. Do not put real secrets into any file that is committed to git (`config.json` is git-ignored; keep it that way).
 
 ## Step 0: Check prerequisites
 
@@ -53,7 +53,7 @@ For secrets, offer the choice: paste the token into `config.json`, or keep it ou
 npm start
 ```
 
-In another shell, confirm it's healthy (use the port from `~/.hit-list/state.json` if 3847 was busy):
+In another shell, confirm it's healthy (use the port from `~/.flight-deck/state.json` if 3847 was busy):
 
 ```bash
 curl -s http://localhost:3847/health
@@ -71,14 +71,14 @@ curl -s -X POST http://localhost:3847/api/tasks -H 'Content-Type: application/js
 So Claude can read and write the same list:
 
 ```bash
-claude mcp add --transport http hit-list http://localhost:3847/mcp
+claude mcp add --transport http flight-deck http://localhost:3847/mcp
 ```
 
 Confirm the `todo_*` tools appear in a new Claude session.
 
 ## Step 5: Test a refresh
 
-Have the user click **Refresh** in the UI (or `curl -s -X POST http://localhost:3847/api/refresh -d '{}' -H 'Content-Type: application/json'`). The first headless pull can take 30 to 60 seconds. If Slack/Gmail/Calendar items don't appear, check `~/.hit-list/claude-pull.log` and confirm the connectors are enabled in their Claude account.
+Have the user click **Refresh** in the UI (or `curl -s -X POST http://localhost:3847/api/refresh -d '{}' -H 'Content-Type: application/json'`). The first headless pull can take 30 to 60 seconds. If Slack/Gmail/Calendar items don't appear, check `~/.flight-deck/claude-pull.log` and confirm the connectors are enabled in their Claude account.
 
 ## Step 6 (optional): Auto-start at login (macOS)
 

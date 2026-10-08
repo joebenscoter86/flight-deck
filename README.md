@@ -105,6 +105,11 @@ Copy `config.example.json` to `config.json` and edit it. The file is git-ignored
 | `activeProjects` | Names of the projects you care about. Used to match GuideCX projects, tag tasks, and generate meeting prep. |
 | `excludeKeywords` | Task names matching any of these (case-insensitive) are never surfaced. Leave `[]` for none. |
 | `claudePull.enabled` | Turn the headless Slack/Gmail/Calendar pull on or off. |
+| `claudePull.sources` | Which of `calendar`, `gmail`, `slack` to read. Default all three. One that is not connected in Claude is skipped. |
+| `extraSources` | Other connectors you already have in Claude, as `[{ "name": "Monday.com", "instructions": "Items assigned to me that are overdue or due this week" }]`. No API key needed. |
+| `refresh.everyMinutes` | How often the server refreshes itself. Default 60. |
+| `refresh.quietHours` | `[start, end]` hours (24-hour, your timezone) when it does not refresh. Default `[20, 7]`. |
+| `ageRedDays` | Items waiting this many days or more show their age in red. Default 3. |
 | `claudeBin` | Path to the `claude` binary. Defaults to `claude` on your `PATH`. |
 | `slack.workspaceUrl` | Your Slack workspace URL (e.g. `https://acme.slack.com`), used to build clickable links. |
 | `guidecx.enabled` | Turn the GuideCX source on. Also requires a token. |

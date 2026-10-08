@@ -2,6 +2,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { CORE_SOURCES, normalizeExtraSources } from './sources.js';
 
 const HOME = os.homedir();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -90,6 +91,12 @@ export const config = {
   // Headless-Claude pull (Slack / Gmail / Calendar via your claude.ai connectors)
   claudeBin: process.env.CLAUDE_BIN || user.claudeBin || 'claude',
   claudePullEnabled: user.claudePull?.enabled !== false,
+  // Which of the core three the pull reads. Setup drops any the user cannot connect.
+  claudePullSources: Array.isArray(user.claudePull?.sources)
+    ? user.claudePull.sources.filter(k => k in CORE_SOURCES)
+    : Object.keys(CORE_SOURCES),
+  // Any other connector the user already has in Claude: [{ name, instructions }].
+  extraSources: normalizeExtraSources(user.extraSources),
   slackWorkspaceUrl: (user.slack?.workspaceUrl || '').replace(/\/$/, ''),
 
   // GuideCX (optional native source)

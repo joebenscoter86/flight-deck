@@ -1,39 +1,10 @@
 import { config } from '../config.js';
-import {
-  getDb, insertTask, findExisting, findByIdentity, computeIdentityHash,
-  reviveRow, todayLocal, updateList, ensureList
-} from '../db/client.js';
+import { getDb, insertTask, todayLocal, updateList, ensureList } from '../db/client.js';
+import { shouldSkipInsert } from './ingest.js';
 import { emit } from '../sse.js';
 import { pullGcx } from './gcx.js';
 import { pullFathom } from './fathom.js';
 import { buildCarryover } from './carryover.js';
-
-// Two-layer dedup used by pipeline source pulls: exact (source, external_id)
-// first, then identity_hash across all dates. Returns true if a pre-existing
-// row makes this insertion a no-op. Side effect: if an existing row is
-// dismissed (done=0), it's revived to today's list and the insert is skipped.
-// Dismiss semantics: "not today, but let the source bring it back."
-function shouldSkipInsert(t, today) {
-  if (t.external_id) {
-    const existing = findExisting(t.source, t.external_id);
-    if (existing) {
-      if (existing.done === 0 && existing.status === 'dismissed') {
-        const revived = reviveRow(existing.id, today);
-        emit('task.updated', revived);
-      }
-      return true;
-    }
-  }
-  const hash = computeIdentityHash(t.task, t.project, t.source);
-  const match = findByIdentity(hash);
-  // Done rows block re-insertion forever (completion contract).
-  // Today-list matches block duplicates within the same refresh.
-  // Dismissed matches do NOT block — let the source emit a fresh row.
-  if (match && (match.done === 1 || match.list_date === today)) {
-    return true;
-  }
-  return false;
-}
 
 let inProgress = false;
 let lastResult = null;
@@ -110,9 +81,12 @@ export async function runRefresh({ skipClaudePull = false } = {}) {
     if (!skipClaudePull && config.claudePullEnabled) {
       try {
         const claudeMod = await import('./claude-pull.js');
-        result.added.claude = await claudeMod.runClaudePull(today);
+        const pull = await claudeMod.runClaudePull(today);
+        result.added.claude = pull.added;
+        result.pull = { sources: pull.sources, missing: pull.missing };
       } catch (e) {
-        result.errors.push(`Claude pull: ${e.message}`);
+        // Messages written for the user (signed out, nothing connected) go through as is.
+        result.errors.push(e.userFacing ? e.message : `Claude pull: ${e.message}`);
       }
     }
 

@@ -13,6 +13,7 @@ import { mountMcp } from './mcp/tools.js';
 import { refreshRouter } from './routes/refresh.js';
 import { askClaudeRouter } from './routes/ask-claude.js';
 import warpLogRouter from './routes/warp-log.js';
+import { triageRouter } from './routes/triage.js';
 import { startScheduler } from './scheduler.js';
 import { runRefresh } from './pipeline/index.js';
 initDb();
@@ -43,6 +44,7 @@ app.use('/api/summary', summaryRouter);
 app.use('/api/refresh', refreshRouter);
 app.use('/api/ask-claude', askClaudeRouter);
 app.use('/api/warp-log', warpLogRouter);
+app.use('/api/triage', triageRouter);
 
 app.get('/api/events', eventsHandler);
 

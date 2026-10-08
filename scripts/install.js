@@ -14,6 +14,15 @@ const SERVER_JS = path.join(APP_DIR, 'src', 'server.js');
 const PLIST_PATH = path.join(HOME, 'Library', 'LaunchAgents', 'com.flightdeck.server.plist');
 const STATE_DIR = config.stateDir;
 
+// launchd starts the server with a bare PATH. The hourly pull shells out to
+// `claude`, which normally lives in ~/.local/bin, so put it (and wherever this
+// shell finds it) on the agent's PATH.
+const CLAUDE_DIRS = [path.join(HOME, '.local', 'bin')];
+try {
+  const found = path.dirname(execSync('command -v claude', { stdio: ['ignore', 'pipe', 'ignore'], shell: '/bin/sh' }).toString().trim());
+  if (found && !CLAUDE_DIRS.includes(found)) CLAUDE_DIRS.unshift(found);
+} catch {}
+
 const plist = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -31,7 +40,7 @@ const plist = `<?xml version="1.0" encoding="UTF-8"?>
   <key>StandardErrorPath</key><string>${STATE_DIR}/server.log</string>
   <key>EnvironmentVariables</key>
   <dict>
-    <key>PATH</key><string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+    <key>PATH</key><string>${[...CLAUDE_DIRS, '/usr/local/bin', '/usr/bin', '/bin', '/opt/homebrew/bin'].join(':')}</string>
   </dict>
 </dict>
 </plist>

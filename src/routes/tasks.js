@@ -4,6 +4,7 @@ import {
   findExisting, findByIdentity, computeIdentityHash, reviveRow, getDb
 } from '../db/client.js';
 import { emit } from '../sse.js';
+import { recordCorrection } from '../triage.js';
 
 export const tasksRouter = Router();
 
@@ -56,7 +57,8 @@ tasksRouter.post('/', (req, res) => {
 
 tasksRouter.patch('/:id', (req, res) => {
   const id = Number(req.params.id);
-  if (!getTask(id)) return res.status(404).json({ error: 'not found' });
+  const current = getTask(id);
+  if (!current) return res.status(404).json({ error: 'not found' });
   // Reject resurface_date in the past — deferring to a past date is almost
   // always a typo and would leave the task visible today anyway.
   if ('resurface_date' in req.body && req.body.resurface_date) {
@@ -67,6 +69,7 @@ tasksRouter.patch('/:id', (req, res) => {
       });
     }
   }
+  if ('priority' in req.body) recordCorrection(getDb(), current, req.body.priority);
   const updated = updateTask(id, req.body);
   emit('task.updated', updated);
   res.json(updated);

@@ -6,6 +6,7 @@ import {
 } from '../db/client.js';
 import { emit } from '../sse.js';
 import { config } from '../config.js';
+import { recordCorrection } from '../triage.js';
 
 export function buildMcpServer() {
   const server = new McpServer({ name: 'flight-deck', version: '0.1.0' });
@@ -66,6 +67,7 @@ export function buildMcpServer() {
       if (append_note) {
         patch.notes = (existing.notes ? existing.notes + '\n' : '') + append_note;
       }
+      if ('priority' in patch) recordCorrection(getDb(), existing, patch.priority);
       const updated = updateTask(id, patch);
       emit('task.updated', updated);
       return { content: [{ type: 'text', text: JSON.stringify(updated) }] };

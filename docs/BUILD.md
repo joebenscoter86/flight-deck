@@ -33,14 +33,31 @@ No single session finishes this. Before you start, read the Status table below a
 | 1. Rename to Flight Deck | Done | GitHub repo renamed to `joebenscoter86/flight-deck` on 2026-10-08. |
 | 2. Test harness | Done | `npm test` runs `node --test tests/*.test.js` (a bare `tests/` directory argument fails on current Node). Installs and runs on Node 25. |
 | 3. Hourly refresh | Done | Checked live with a 1-minute interval. What the pull does when the CLI is signed out is not handled; see Known plan fixes 6. |
-| 4. Corrections and triage rules | Not started | See "Known plan fixes" 1 and 3. |
+| 4. Corrections and triage rules | Done in code | Unit tested. Not yet seen live: ten real tier changes followed by a pull that rewrites `triage.md`. |
 | 5. Waiting days in red | Done | Checked in the browser. Age counts from when Flight Deck first saw the item; see Known plan fixes 5. |
 | 6. Claude Desktop button | Done in code | Fix 2 applied and tested. Not yet clicked for real: confirm Claude Desktop opens the Code tab with the prompt filled in (plan Task 6 Step 5). |
 | 7. Beginner config | Done | |
-| 7b. Sources scaffold | Not started | Design in spec 3a. Joe confirmed 2026-10-08 that the core three are expected but setup carries on without one. |
+| 7b. Sources scaffold | Done in code | Live refresh ran against Gmail and Calendar on 2026-10-08. Slack path and extra sources are built but untested (no Slack on Joe's account; no extra connector tried). |
 | 8. Runbook and README | Not started | Needs Phase 0 results. |
 | 9. Guide page | Not started | Lives in the site repo. |
 | 10. Folder mode | Not started | Gated on Phase 0. |
+
+## How the pull works now (differs from the plan)
+
+The plan had the headless session write tasks back itself with `curl`, under `bypassPermissions`. That was replaced on 2026-10-08 because the session reads untrusted text and held send and delete tools plus a shell. Now:
+
+1. `claude mcp list` (no model run) says which connectors are connected. `src/sources.js` matches them to the configured sources.
+2. One `claude -p` session runs with `--tools ToolSearch` (no shell, no files), default permission mode, and `--allowedTools` limited to read-style tool names on the connectors in use. It prints one JSON document after `RESULT_JSON:`.
+3. `src/pipeline/ingest.js` validates that JSON and writes it. Learned triage rules come back in the same JSON, so nothing is saved by curl.
+
+The prompt names no connector tools; the session finds them with ToolSearch. Do not reintroduce `bypassPermissions`, Bash, or hard-coded tool names. Do not set `ENABLE_TOOL_SEARCH=false`: it loads every tool up front and one run cost about twenty times more.
+
+## Open items for the next session
+
+- **Usage per pull.** The live run reported about $0.82 of notional usage on Joe's Mac, much of it from his own plugins loading. Hourly, that adds up against a viewer's plan limits. Decide whether to default the pull to a smaller model (`--model`), refresh less often, or both.
+- **A connector can say Connected and still fail.** Joe's Google Calendar showed Connected but returned "token expired" when read. The pull now reports this ("could not be read, reconnect it"), on the refresh toast only. A persistent banner in the UI would be better for a non-technical user; same for the signed-out message.
+- **launchd and `claude`.** `scripts/install.js` now puts `~/.local/bin` on the agent's PATH. Whether a desktop-only user has a `claude` binary there at all is still Phase 0 Step 2.
+- Fixes 1, 2, 3, 5, 6, 7 and 8 below are done. 6 is done as far as detection and message; the runbook check belongs to Task 8.
 
 ## Known plan fixes
 

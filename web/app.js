@@ -51,7 +51,8 @@ function sourceIcon(source) {
 function sourceLabel(source) {
   const labels = { gcx: 'GuideCX', fathom: 'Fathom', slack: 'Slack', email: 'Gmail', gmail: 'Gmail', calendar: 'Calendar', manual: 'Manual' };
   if (labels[source]) return labels[source];
-  return source ? source.charAt(0).toUpperCase() + source.slice(1) : 'Other';
+  // Extra sources arrive as slugs ("monday-com"); show them as words.
+  return source ? source.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Other';
 }
 
 function summonSourceBtn(t, style = 'standard', cfg = null) {
@@ -495,7 +496,8 @@ document.getElementById('refresh-btn').addEventListener('click', async () => {
     const result = await api('/api/refresh', { method: 'POST', body: '{}' });
     const total = Object.values(result.added).reduce((a,b) => a+b, 0);
     toast(`Refresh complete: +${total} items`);
-    if (result.errors.length) toast(`Errors: ${result.errors.join('; ')}`);
+    if (result.errors.length) toast(result.errors.join(' '));
+    else if (result.pull?.missing?.length) toast(`Skipped: ${result.pull.missing.join('; ')}`);
     await loadAll();
   } catch (e) {
     toast(`Refresh failed: ${e.message}`);

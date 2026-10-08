@@ -35,3 +35,14 @@ Same command, clean environment. The session listed 30 Gmail tools and 9 Google 
 ## Steps 2 to 5
 
 Not started.
+
+## Follow-up the same day: locking the session down, and a live refresh
+
+Tested on Joe's Mac, CLI 2.1.208:
+
+- `--tools ToolSearch --allowedTools <rules>` in default permission mode gives a session with no shell that can still find and call connector tools. A tool not on the list is refused and shows up in `permission_denials`.
+- Allow rules accept a trailing wildcard inside a tool name: `mcp__claude_ai_Gmail__list_l*` allowed `list_labels` and refused `list_drafts`. So read access can be granted by verb (`get_*`, `list_*`, `search_*`...) without knowing exact tool names.
+- `claude mcp list` prints each connector with Connected or Needs authentication, without running a model.
+- With `ENABLE_TOOL_SEARCH=false` every tool (571 on this Mac) loads up front; one trivial run reported $11 of notional usage against about $0.50 with ToolSearch. Do not use it.
+
+Live refresh through the rebuilt pull, scratch state folder: finished in 43 seconds, exit 0, no refused calls. Gmail was searched (201 unread in 14 days, none from a person waiting on Joe, so no tasks). Google Calendar showed Connected in `claude mcp list` but returned "token expired" when read; the run reported it and left the meeting list alone. Slack was skipped as not connected. Nothing was written to Joe's real state.

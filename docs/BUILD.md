@@ -38,7 +38,7 @@ No single session finishes this. Before you start, read the Status table below a
 | 6. Claude Desktop button | Done in code | Fix 2 applied and tested. Not yet clicked for real: confirm Claude Desktop opens the Code tab with the prompt filled in (plan Task 6 Step 5). |
 | 7. Beginner config | Done | |
 | 7b. Sources scaffold | Done in code | Live refresh ran against Gmail and Calendar on 2026-10-08. Slack path and extra sources are built but untested (no Slack on Joe's account; no extra connector tried). |
-| 8. Runbook and README | Not started | Needs Phase 0 results. |
+| 8. Runbook and README | Written, not dry-run | `CLAUDE.md` and `README.md` rewritten for the new pull. Still to do: plan Task 8 Step 3, a cold run from the pasted prompt on a Mac without Flight Deck, logged in `docs/decisions/`. `npm run install:agent` has not been run since the rename. README has no screenshot yet. |
 | 9. Guide page | Not started | Lives in the site repo. |
 | 10. Folder mode | Not started | Gated on Phase 0. |
 
@@ -54,9 +54,10 @@ The prompt names no connector tools; the session finds them with ToolSearch. Do 
 
 ## Open items for the next session
 
-- **Usage per pull.** The live run reported about $0.82 of notional usage on Joe's Mac, much of it from his own plugins loading. Hourly, that adds up against a viewer's plan limits. Decide whether to default the pull to a smaller model (`--model`), refresh less often, or both.
+- **Usage per pull.** The pull now defaults to `sonnet` and Gmail only reads mail since the last refresh. Measured on Joe's Mac: first run (two weeks of mail) about $1.40 notional, steady-state hourly run about $0.77 and 42 seconds. Much of the steady cost is Joe's own plugins loading into the session (`--setting-sources user` is required; without it the connectors do not load). Measure on a clean account before deciding whether hourly is too often.
 - **A connector can say Connected and still fail.** Joe's Google Calendar showed Connected but returned "token expired" when read. The pull now reports this ("could not be read, reconnect it"), on the refresh toast only. A persistent banner in the UI would be better for a non-technical user; same for the signed-out message.
 - **launchd and `claude`.** `scripts/install.js` now puts `~/.local/bin` on the agent's PATH. Whether a desktop-only user has a `claude` binary there at all is still Phase 0 Step 2.
+- **The runbook installs Node with Homebrew** (password prompt, Xcode tools, and `git` for the clone). A no-password route is possible: download the official Node build into `~/.flight-deck` and fetch the repo as a tarball with `curl`. Untested; worth trying during the cold dry run.
 - Fixes 1, 2, 3, 5, 6, 7 and 8 below are done. 6 is done as far as detection and message; the runbook check belongs to Task 8.
 
 ## Known plan fixes

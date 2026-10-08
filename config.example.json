@@ -1,13 +1,12 @@
 {
   "userName": "Your Name",
   "userEmail": "you@example.com",
-  "userSlackId": "U0XXXXXXXXX",
+  "userSlackId": "",
   "timezone": "America/New_York",
   "activeProjects": ["Project Alpha", "Project Beta"],
 
   "_advanced": "Everything below has a working default. Leave it unless the guide tells you otherwise.",
   "productName": "Flight Deck",
-  "orgDomain": "example.com",
   "workHoursPerDay": 8,
   "port": 3847,
   "excludeKeywords": [],
@@ -16,7 +15,7 @@
   "claudePull": { "enabled": true, "model": "sonnet", "sources": ["calendar", "gmail", "slack"] },
   "extraSources": [],
   "claudeBin": "claude",
-  "slack": { "workspaceUrl": "https://your-workspace.slack.com" },
+  "slack": { "workspaceUrl": "" },
   "guidecx": { "enabled": false, "apiBase": "https://api.guidecx.com/api/v2", "webBaseUrl": "", "token": "" },
   "fathom": { "enabled": false, "apiBase": "https://api.fathom.ai/external/v1", "apiKey": "" }
 }

@@ -246,7 +246,7 @@ export async function discoverConnectors() {
 }
 
 function signedOut() {
-  return userError('Claude is signed out on this computer, so your list could not update. Open the Claude app and say: "Sign the claude command line tool back in for Flight Deck."');
+  return userError('Claude is signed out on this computer, so your list could not update. In the Claude app, open the Code tab, choose the flight-deck folder and say: "Flight Deck says Claude is signed out."');
 }
 
 const REASONS = {

@@ -13,7 +13,7 @@
   "excludeKeywords": [],
   "refresh": { "everyMinutes": 60, "quietHours": [20, 7] },
   "ageRedDays": 3,
-  "claudePull": { "enabled": true, "sources": ["calendar", "gmail", "slack"] },
+  "claudePull": { "enabled": true, "model": "sonnet", "sources": ["calendar", "gmail", "slack"] },
   "extraSources": [],
   "claudeBin": "claude",
   "slack": { "workspaceUrl": "https://your-workspace.slack.com" },

@@ -91,6 +91,10 @@ export const config = {
   // Headless-Claude pull (Slack / Gmail / Calendar via your claude.ai connectors)
   claudeBin: process.env.CLAUDE_BIN || user.claudeBin || 'claude',
   claudePullEnabled: user.claudePull?.enabled !== false,
+  // Model for the hourly pull. It runs many times a day against the user's plan
+  // limits, so the default is the mid-size model, not the account's default.
+  claudePullModel: typeof user.claudePull?.model === 'string' && user.claudePull.model.trim()
+    ? user.claudePull.model.trim() : 'sonnet',
   // Which of the core three the pull reads. Setup drops any the user cannot connect.
   claudePullSources: Array.isArray(user.claudePull?.sources)
     ? user.claudePull.sources.filter(k => k in CORE_SOURCES)

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { withTestEnv } from './helpers/config.js';
 withTestEnv();
 const { initDb, listTasks, listMeetings, insertMeeting } = await import('../src/db/client.js');
-const { buildPrompt, buildExtraSourceStep, parsePullResult } = await import('../src/pipeline/claude-pull.js');
+const { buildPrompt, buildExtraSourceStep, parsePullResult, gmailQuery } = await import('../src/pipeline/claude-pull.js');
 const { ingestPullResult, cleanTask } = await import('../src/pipeline/ingest.js');
 
 initDb();
@@ -22,6 +22,11 @@ test('the prompt only has steps for active sources and names no tools', () => {
   assert.match(p, /"sources":\{"calendar":"ok","email":"ok"\}/);
   assert.match(p, /original_date/);
   assert.match(p, /LEARN: NO/);
+});
+
+test('gmail only looks back to the day before the last refresh', () => {
+  assert.equal(gmailQuery('2026-10-08T15:00:00.000Z'), 'is:unread in:inbox after:2026/10/07');
+  assert.equal(gmailQuery('x'), 'is:unread in:inbox newer_than:14d');
 });
 
 test('learned rules, corrections and the rewrite switch reach the prompt', () => {

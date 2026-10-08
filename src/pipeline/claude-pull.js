@@ -44,7 +44,9 @@ Set sources.calendar to "ok" once you have read the calendar, even if there are 
 }
 
 function slackStep(n, cutoff) {
-  const slackBase = config.slackWorkspaceUrl || 'https://YOUR-WORKSPACE.slack.com';
+  const link = config.slackWorkspaceUrl
+    ? `"${config.slackWorkspaceUrl}/archives/<channel_id>/p<message_ts with the period removed>"`
+    : '"<the message permalink if the tool gives one, otherwise null>"';
   return `${RULE}
 STEP ${n}: SLACK
 ${RULE}
@@ -63,20 +65,29 @@ For EACH candidate message, read the full thread and then decide:
 Do NOT apply an artificial cap. If 15 threads are genuinely still open, add 15 tasks. If zero are open, add zero. The goal is accuracy, not brevity.
 
 Each open item goes in "tasks":
-{"task":"<short description>","priority":"<tier>","project":"<project or null>","source":"slack","est_minutes":10,"notes":"<who, which channel, what they need>","external_id":"<channel_id>:<message_ts>","source_url":"${slackBase}/archives/<channel_id>/p<message_ts with the period removed>","original_date":"<YYYY-MM-DD the message was sent>"}
+{"task":"<short description>","priority":"<tier>","project":"<project or null>","source":"slack","est_minutes":10,"notes":"<who, which channel, what they need>","external_id":"<channel_id>:<message_ts>","source_url":${link},"original_date":"<YYYY-MM-DD the message was sent>"}
 
 In "audit", briefly list the Slack candidates you considered and the skip/keep decision for each.
 Set sources.slack to "ok" once you have searched Slack.`;
 }
 
-function gmailStep(n) {
+// Gmail's after: filter works in whole days. Go one day earlier than the cutoff so
+// a timezone edge never hides a message; dedup makes the overlap harmless. Without
+// this, every hourly pull re-reads two weeks of unread mail.
+export function gmailQuery(cutoff) {
+  const d = new Date(Date.parse(cutoff) - 24 * 60 * 60 * 1000);
+  const day = Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10).replace(/-/g, '/');
+  return day ? `is:unread in:inbox after:${day}` : `is:unread in:inbox newer_than:${FIRST_RUN_LOOKBACK_DAYS}d`;
+}
+
+function gmailStep(n, cutoff) {
   const skip = config.guidecx.enabled
     ? 'skip marketing, automated notifications, and anything from your project-management tool (queried directly elsewhere)'
     : 'skip marketing, newsletters, receipts and automated notifications';
   return `${RULE}
 STEP ${n}: GMAIL
 ${RULE}
-Search for unread inbox mail from the last ${FIRST_RUN_LOOKBACK_DAYS} days (Gmail query: is:unread in:inbox newer_than:${FIRST_RUN_LOOKBACK_DAYS}d). Page through every result, not only the first page; you can judge most threads from sender and subject and only open the ones that might be a real person. For each thread a person is genuinely waiting on the user to answer or act on (${skip}), add to "tasks":
+Search for unread inbox mail since the look-back date (Gmail query: ${gmailQuery(cutoff)}). Page through every result, not only the first page; you can judge most threads from sender and subject and only open the ones that might be a real person. For each thread a person is genuinely waiting on the user to answer or act on (${skip}), add to "tasks":
 {"task":"Reply to <sender> re: <subject snippet>","priority":"<tier>","project":"<project if applicable>","source":"email","est_minutes":15,"notes":"<what they need>","external_id":"<threadId>","source_url":"https://mail.google.com/mail/u/0/#inbox/<threadId>","original_date":"<YYYY-MM-DD the newest unanswered message was sent>"}
 
 Set sources.email to "ok" once you have searched Gmail.`;
@@ -109,7 +120,7 @@ export function buildPrompt({ today, sources, notes = [], cutoff, triageRules = 
     n++;
     if (s.key === 'calendar') return calendarStep(n);
     if (s.key === 'slack') return slackStep(n, cutoff);
-    if (s.key === 'gmail') return gmailStep(n);
+    if (s.key === 'gmail') return gmailStep(n, cutoff);
     return buildExtraSourceStep(s, n);
   });
   const sourceKeys = sources.map(s => `"${s.taskSource}":"ok"`).join(',');
@@ -291,6 +302,7 @@ export async function runClaudePull(today) {
     '--tools', 'ToolSearch',
     // Default permission mode refuses anything not listed here.
     '--allowedTools', ...allowRules(active),
+    '--model', config.claudePullModel,
     '--output-format', 'json',
     prompt,
   ], { timeoutMs, onChunk: log });

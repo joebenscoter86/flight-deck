@@ -14,7 +14,7 @@ Open the **Code** tab in the Claude desktop app and paste this:
 Read https://raw.githubusercontent.com/joebenscoter86/flight-deck/main/CLAUDE.md and follow it step by step. Ask me only the questions it tells you to ask.
 ```
 
-Claude installs what is missing, asks you three or four questions (your name, your email, the projects you work on), starts Flight Deck and opens your list. It takes about ten minutes. If your Mac asks for your password along the way, that is the Mac installing a standard tool, not Claude.
+Claude downloads the app, asks you three or four questions (your name, your email, the projects you work on), starts Flight Deck and opens your list. It takes about ten minutes and never needs your Mac password.
 
 Windows is not supported yet.
 
@@ -119,6 +119,8 @@ Setup registers the MCP server with Claude Code (`claude mcp add --transport htt
 There is deliberately no delete tool. Claude can complete or dismiss tasks; only you can delete them from the page.
 
 ### Running it by hand
+
+Setup uses `scripts/flightdeck`, which keeps a private Node in `~/.flight-deck/node` so nothing has to be installed system-wide (`setup`, `install`, `uninstall`, `update`, `test`). With your own Node 20+:
 
 ```bash
 npm install

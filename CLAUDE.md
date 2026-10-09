@@ -2,7 +2,7 @@
 
 You are setting up Flight Deck for someone who does not code. They pasted one link to get here and may never have opened a terminal. Do every step yourself. Ask them only the questions marked ASK. Never ask them to type a command. Confirm each step in one plain sentence, then move on. No jargon in what you say to them: say "the app" and "your list", not "server", "repo" or "config".
 
-Before anything that makes the Mac ask for their password, tell them: "Your Mac is about to ask for your password. That's the Mac asking, not me."
+Nothing in this runbook needs their Mac password. If the Mac asks for one, stop and tell them what asked.
 
 If you are here to change the code rather than install it, stop and read `docs/BUILD.md` instead.
 
@@ -12,14 +12,12 @@ If you are here to change the code rather than install it, stop and read `docs/B
 
 This runbook is for a Mac. If `uname` is not `Darwin`, tell them Windows is not supported yet and stop.
 
-## Step 1: Check what is installed
+## Step 1: Check Claude itself
 
-- Run `node --version`. You need 20 or newer. If it is missing or older:
-  - Run `xcode-select -p`. If that fails, run `xcode-select --install` and tell the user: "A window just opened. Click Install and tell me when it finishes."
-  - Run `command -v brew`. If missing, install Homebrew with the one-line command from https://brew.sh (password prompt: warn them first).
-  - Run `brew install node`.
 - Run `command -v claude || ls ~/.local/bin/claude`. Flight Deck uses this program to read their connectors every hour. Note the full path. If neither finds it, tell the user: "Flight Deck needs one more piece of Claude that isn't on this Mac yet. Send Joe a note and he'll help." and stop.
 - Run `claude mcp list` (use the full path if `claude` is not on the PATH). If it says anything about signing in or authentication instead of listing connectors, run `claude auth login` and tell the user: "A browser tab just opened. Sign in to Claude there, then come back and tell me." Then run `claude mcp list` again.
+
+Do not install Node, Homebrew, Xcode tools or git, and do not use `git clone`. Step 3 brings everything it needs and never asks for a password.
 
 ## Step 2: Check the connectors
 
@@ -34,14 +32,14 @@ Remember which of the three are connected, and which other lines starting with `
 ## Step 3: Get the app
 
 ```bash
-git clone https://github.com/joebenscoter86/flight-deck.git ~/flight-deck && cd ~/flight-deck && npm install
+mkdir -p ~/flight-deck && curl -fsSL https://github.com/joebenscoter86/flight-deck/archive/refs/heads/main.tar.gz | tar -xz --strip-components 1 -C ~/flight-deck && ~/flight-deck/scripts/flightdeck setup
 ```
 
-If `~/flight-deck` already exists, run `git -C ~/flight-deck pull && cd ~/flight-deck && npm install` instead.
+This downloads the app into `~/flight-deck`, then downloads its own private copy of Node into `~/.flight-deck/node` and installs what the app needs. It takes a minute or two. Tell the user: "I'm downloading the app now."
 
 ## Step 4: Settings (ASK only these)
 
-Create `~/.flight-deck/` and copy `config.example.json` to `~/.flight-deck/config.json`. Fill it in:
+Copy `~/flight-deck/config.example.json` to `~/.flight-deck/config.json`. Fill it in:
 
 - ASK: "What name should I use for you?" -> `userName`
 - ASK: "What's the email address you use for work?" -> `userEmail`
@@ -57,7 +55,7 @@ Leave everything else in the file as it is. Never ask about GuideCX or Fathom.
 ## Step 5: Start it and keep it running
 
 ```bash
-cd ~/flight-deck && npm run install:agent
+~/flight-deck/scripts/flightdeck install
 ```
 
 This starts the app and makes it start by itself whenever the Mac starts. Check it with `curl -s http://localhost:3847/health`. If that fails, the real port is in `~/.flight-deck/state.json`; use that port in every command below.
@@ -92,7 +90,7 @@ They will open this folder in Claude and ask in their own words. Do it for them,
 - **"Stop pulling from [source]":** remove it from `claudePull.sources` or `extraSources`, restart, confirm.
 - **"What did it find last time?":** read the end of `~/.flight-deck/claude-pull.log` and summarize in plain words.
 - **"Change how it sorts things":** show them `~/.flight-deck/triage.md` in plain words and edit it as they ask.
-- **"Update Flight Deck":** `git -C ~/flight-deck pull && cd ~/flight-deck && npm install`, then restart the app.
+- **"Update Flight Deck":** `~/flight-deck/scripts/flightdeck update` (fetches the latest code, reinstalls, restarts).
 
 ## If something goes wrong
 
@@ -100,7 +98,7 @@ They will open this folder in Claude and ask in their own words. Do it for them,
 - **A source "could not be read":** its sign-in has expired. Send the user to Customize, then Connectors in the Claude app to reconnect it, then refresh again.
 - **The list is empty after a refresh with no errors:** that can be true (nothing is waiting on them). To check what was read, run `tail -40 ~/.flight-deck/claude-pull.log` and tell them in plain words what it found and skipped.
 - **Port in use:** the app picks the next free one by itself. The real port is in `~/.flight-deck/state.json`.
-- **To stop it:** `cd ~/flight-deck && npm run uninstall:agent`. To remove everything, also delete `~/.flight-deck` and `~/flight-deck`, but ask the user first: that deletes their list.
+- **To stop it:** `~/flight-deck/scripts/flightdeck uninstall`. To remove everything, also delete `~/.flight-deck` and `~/flight-deck`, but ask the user first: that deletes their list.
 
 ## Guardrails
 

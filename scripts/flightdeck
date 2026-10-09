@@ -1,0 +1,67 @@
+#!/bin/bash
+# Flight Deck's own launcher. It exists so setup never needs a password, Homebrew,
+# Xcode tools or git: it keeps a private copy of Node in ~/.flight-deck/node and
+# runs everything with that. Only curl, tar and shasum are used, which every Mac has.
+#
+#   scripts/flightdeck setup       download Node if needed, install dependencies
+#   scripts/flightdeck install     start the app now and at every login
+#   scripts/flightdeck uninstall   stop it and remove the login agent
+#   scripts/flightdeck update      fetch the latest code, reinstall, restart
+#   scripts/flightdeck test        run the test suite
+#   scripts/flightdeck node ...    run the private Node directly
+set -euo pipefail
+
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+STATE_DIR="${FLIGHT_DECK_STATE_DIR:-$HOME/.flight-deck}"
+NODE_DIR="$STATE_DIR/node"
+NODE_MAJOR=22
+REPO_TARBALL="https://github.com/joebenscoter86/flight-deck/archive/refs/heads/${FLIGHT_DECK_BRANCH:-main}.tar.gz"
+
+ensure_node() {
+  if [ -x "$NODE_DIR/bin/node" ]; then return; fi
+  [ "$(uname -s)" = "Darwin" ] || { echo "Flight Deck's setup supports macOS only." >&2; exit 1; }
+  case "$(uname -m)" in
+    arm64) arch=arm64 ;;
+    x86_64) arch=x64 ;;
+    *) echo "Unsupported Mac type: $(uname -m)" >&2; exit 1 ;;
+  esac
+  base="https://nodejs.org/dist/latest-v${NODE_MAJOR}.x"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  echo "Downloading Node ${NODE_MAJOR} (about 45 MB)..."
+  # The checksum line names the exact file; verify the download against it.
+  curl -fsSL "$base/SHASUMS256.txt" | grep " node-v.*-darwin-${arch}\.tar\.gz$" > "$tmp/sum"
+  file="$(awk '{print $2}' "$tmp/sum")"
+  curl -fSL --progress-bar "$base/$file" -o "$tmp/$file"
+  (cd "$tmp" && shasum -a 256 -c sum >/dev/null) || { echo "Node download failed its checksum." >&2; exit 1; }
+  mkdir -p "$NODE_DIR"
+  tar -xzf "$tmp/$file" --strip-components 1 -C "$NODE_DIR"
+  echo "Node $("$NODE_DIR/bin/node" --version) installed in $NODE_DIR"
+}
+
+# npm and the packages' install scripts look for `node` on the PATH.
+with_node() { PATH="$NODE_DIR/bin:$PATH" "$@"; }
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  setup)
+    mkdir -p "$STATE_DIR"
+    ensure_node
+    cd "$APP_DIR"
+    with_node npm install --omit=dev --no-audit --no-fund
+    echo "Flight Deck is set up in $APP_DIR"
+    ;;
+  install)   ensure_node; cd "$APP_DIR"; with_node node scripts/install.js ;;
+  uninstall) ensure_node; cd "$APP_DIR"; with_node node scripts/uninstall.js ;;
+  update)
+    ensure_node
+    curl -fsSL "$REPO_TARBALL" | tar -xz --strip-components 1 -C "$APP_DIR"
+    cd "$APP_DIR"
+    with_node npm install --omit=dev --no-audit --no-fund
+    launchctl kickstart -k "gui/$(id -u)/com.flightdeck.server" 2>/dev/null || true
+    echo "Flight Deck updated."
+    ;;
+  test)      ensure_node; cd "$APP_DIR"; with_node npm test ;;
+  node)      ensure_node; with_node node "$@" ;;
+  *) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

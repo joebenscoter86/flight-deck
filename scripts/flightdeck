@@ -8,6 +8,7 @@
 #   scripts/flightdeck uninstall   stop it and remove the login agent
 #   scripts/flightdeck update      fetch the latest code, reinstall, restart
 #   scripts/flightdeck test        run the test suite
+#   scripts/flightdeck demo        run a second copy with made-up data, for screenshots
 #   scripts/flightdeck node ...    run the private Node directly
 set -euo pipefail
 
@@ -62,6 +63,7 @@ case "$cmd" in
     echo "Flight Deck updated."
     ;;
   test)      ensure_node; cd "$APP_DIR"; with_node npm test ;;
+  demo)      ensure_node; cd "$APP_DIR"; with_node node scripts/seed-demo.js ;;
   node)      ensure_node; with_node node "$@" ;;
-  *) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

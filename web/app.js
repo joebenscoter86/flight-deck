@@ -487,6 +487,24 @@ async function loadAll() {
   renderTasks(filterTasks(tasks));
 }
 
+/* ---------- Health banner ---------- */
+// Shows what went wrong on the last refresh and stays until one succeeds. Hourly
+// refreshes run with nobody watching, so a toast is not enough.
+async function loadHealth() {
+  const el = document.getElementById('health-banner');
+  let health;
+  try { ({ health } = await api('/api/refresh/status')); } catch { return; }
+  if (!health || health.level === 'ok') { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  const when = health.at ? new Date(health.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+  el.className = `health-banner ${health.level}`;
+  el.innerHTML = `
+    <span class="material-symbols-outlined">${health.level === 'error' ? 'error' : 'info'}</span>
+    <div class="health-text">
+      ${health.messages.map(m => `<p${m.detail ? ` title="${escapeHtml(m.detail)}"` : ''}>${escapeHtml(m.text)}</p>`).join('')}
+      ${when ? `<p class="health-when">Last tried at ${escapeHtml(when)}</p>` : ''}
+    </div>`;
+}
+
 /* ---------- Refresh ---------- */
 document.getElementById('refresh-btn').addEventListener('click', async () => {
   const btn = document.getElementById('refresh-btn');
@@ -496,9 +514,8 @@ document.getElementById('refresh-btn').addEventListener('click', async () => {
     const result = await api('/api/refresh', { method: 'POST', body: '{}' });
     const total = Object.values(result.added).reduce((a,b) => a+b, 0);
     toast(`Refresh complete: +${total} items`);
-    if (result.errors.length) toast(result.errors.join(' '));
-    else if (result.pull?.missing?.length) toast(`Skipped: ${result.pull.missing.join('; ')}`);
     await loadAll();
+    await loadHealth();
   } catch (e) {
     toast(`Refresh failed: ${e.message}`);
   } finally {
@@ -508,6 +525,7 @@ document.getElementById('refresh-btn').addEventListener('click', async () => {
 });
 
 loadAll();
+loadHealth();
 
 /* ---------- Inline notes editing ---------- */
 document.addEventListener('focusout', async (e) => {
@@ -885,6 +903,7 @@ function startEventStream() {
       toast(`Refresh complete: +${total}`);
     } catch {}
     debouncedReload();
+    loadHealth();
   });
   es.onerror = () => {
     es.close();

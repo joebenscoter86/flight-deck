@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node --test tests/*.test.js",
+    "demo": "node scripts/seed-demo.js",
     "install:agent": "node scripts/install.js",
     "uninstall:agent": "node scripts/uninstall.js"
   },

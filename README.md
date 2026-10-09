@@ -4,6 +4,12 @@ Every morning you open one tab and everything you owe people is already there. F
 
 You do not need to know how to code to set it up. Claude does it for you.
 
+> **Mac only for now.** Flight Deck runs on macOS. It does not work on Windows or Linux yet.
+
+![A Flight Deck list: three Must Do items, the oldest marked as waiting 14 days in red](docs/screenshot.jpg)
+
+*The list above is demo data.*
+
 ## Set it up
 
 You need a Mac and the Claude desktop app, with the Gmail, Google Calendar and Slack connectors turned on (in Claude: Customize, then Connectors). Any one of the three is enough to start.
@@ -16,8 +22,6 @@ Read https://raw.githubusercontent.com/joebenscoter86/flight-deck/main/CLAUDE.md
 
 Claude downloads the app, asks you three or four questions (your name, your email, the projects you work on), starts Flight Deck and opens your list. It takes about ten minutes and never needs your Mac password.
 
-Windows is not supported yet.
-
 ## Using it
 
 - **Open the tab each morning.** It refreshes itself every hour from 7am to 8pm. There is a Refresh button if you want it sooner.
@@ -25,6 +29,7 @@ Windows is not supported yet.
 - **Drag things where they belong.** When Flight Deck puts something in the wrong column, drag it. After about ten of those it writes its own rules for how you sort things, and uses them from then on.
 - **Check things off, add notes, add your own tasks.** Refreshing never undoes your edits and never brings back something you finished.
 - **Open in Claude.** Each item has a button that opens Claude with that item ready to work on.
+- **If something stops working, the page tells you.** A bar across the top says what went wrong (for example, Claude got signed out) and what to do. It goes away once the list updates again.
 
 ## What leaves your computer
 
@@ -131,6 +136,8 @@ npm run install:agent        # start at login (macOS launchd)
 npm run uninstall:agent
 tail -f ~/.flight-deck/server.log
 ```
+
+To see it with made-up data (for a screenshot or a recording), run `scripts/flightdeck demo` (or `npm run demo`). It starts a second copy on port 3900 with its own data folder, `~/.flight-deck-demo`, rebuilt on every start. It never reads an account and never touches your real list.
 
 If port 3847 is busy the app takes the next free one and records it in `~/.flight-deck/state.json`. The **Warp Log** page shows where your time went by project and by source.
 

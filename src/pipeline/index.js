@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { config } from '../config.js';
 import { getDb, insertTask, todayLocal, updateList, ensureList } from '../db/client.js';
 import { shouldSkipInsert } from './ingest.js';
@@ -7,7 +9,11 @@ import { pullFathom } from './fathom.js';
 import { buildCarryover } from './carryover.js';
 
 let inProgress = false;
+// The last result is kept on disk so the page can still say what went wrong after
+// the server restarts (a Mac that slept overnight, a login).
+const LAST_PATH = path.join(config.stateDir, 'last-refresh.json');
 let lastResult = null;
+try { lastResult = JSON.parse(fs.readFileSync(LAST_PATH, 'utf8')); } catch {}
 
 export function isRunning() { return inProgress; }
 export function lastSummary() { return lastResult; }
@@ -93,6 +99,7 @@ export async function runRefresh({ skipClaudePull = false } = {}) {
     updateList(today, { last_refreshed_at: new Date().toISOString() });
     result.finished_at = new Date().toISOString();
     lastResult = result;
+    try { fs.writeFileSync(LAST_PATH, JSON.stringify(result, null, 2)); } catch {}
     emit('refresh.completed', result);
     return result;
   } finally {

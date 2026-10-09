@@ -35,10 +35,10 @@ No single session finishes this. Before you start, read the Status table below a
 | 3. Hourly refresh | Done | Checked live with a 1-minute interval. What the pull does when the CLI is signed out is not handled; see Known plan fixes 6. |
 | 4. Corrections and triage rules | Done in code | Unit tested. Not yet seen live: ten real tier changes followed by a pull that rewrites `triage.md`. |
 | 5. Waiting days in red | Done | Checked in the browser. Age counts from when Flight Deck first saw the item; see Known plan fixes 5. |
-| 6. Claude Desktop button | Done in code | Fix 2 applied and tested. Not yet clicked for real: confirm Claude Desktop opens the Code tab with the prompt filled in (plan Task 6 Step 5). |
+| 6. Claude Desktop button | Done | Joe clicked it on 2026-10-08: Claude Desktop opened a Code session with the prompt filled in. |
 | 7. Beginner config | Done | |
 | 7b. Sources scaffold | Done in code | Live refresh ran against Gmail and Calendar on 2026-10-08. Slack path and extra sources are built but untested (no Slack on Joe's account; no extra connector tried). |
-| 8. Runbook and README | Written; commands verified | Setup is now `curl` + `scripts/flightdeck` (private Node, no password). Every runbook command was run in a bare environment on Joe's Mac and it is installed there for real. Still owed: Claude following the pasted prompt on a cold Mac. See `docs/decisions/2026-10-08-runbook-dry-run.md`. README has no screenshot yet. |
+| 8. Runbook and README | Written; commands verified | Setup is now `curl` + `scripts/flightdeck` (private Node, no password). Every runbook command was run in a bare environment on Joe's Mac and it is installed there for real. Still owed: Claude following the pasted prompt on a cold Mac. See `docs/decisions/2026-10-08-runbook-dry-run.md`. |
 | 9. Guide page | Not started | Lives in the site repo. |
 | 10. Folder mode | Not started | Gated on Phase 0. |
 
@@ -55,7 +55,9 @@ The prompt names no connector tools; the session finds them with ToolSearch. Do 
 ## Open items for the next session
 
 - **Usage per pull.** The pull now defaults to `sonnet` and Gmail only reads mail since the last refresh. Measured on Joe's Mac: first run (two weeks of mail) about $1.40 notional, steady-state hourly run about $0.77 and 42 seconds. Much of the steady cost is Joe's own plugins loading into the session (`--setting-sources user` is required; without it the connectors do not load). Measure on a clean account before deciding whether hourly is too often.
-- **A connector can say Connected and still fail.** Joe's Google Calendar showed Connected but returned "token expired" when read. The pull now reports this ("could not be read, reconnect it"), on the refresh toast only. A persistent banner in the UI would be better for a non-technical user; same for the signed-out message.
+- **Health banner (done 2026-10-08).** The last refresh result is saved to `~/.flight-deck/last-refresh.json` and `src/health.js` turns it into a bar at the top of the page that stays until a refresh succeeds. Covers signed out, a source not connected, and a source that could not be read.
+- **Demo mode (done 2026-10-08).** `scripts/flightdeck demo` seeds a made-up list (`scripts/seed-demo.js`) in `~/.flight-deck-demo` on port 3900. Used for the README screenshot and Joe's reel. Keep the seed data fictional.
+- **Usage per pull on a clean account:** Joe chose to punt on measuring this for now.
 - **launchd and `claude`.** `scripts/install.js` now puts `~/.local/bin` on the agent's PATH. Whether a desktop-only user has a `claude` binary there at all is still Phase 0 Step 2.
 - **PR.** All of this is on `claude/docs-review-planning-01c3db`, PR 2. The README prompt and the runbook's download URL point at `main`, so nothing reaches a viewer until it is merged.
 - Fixes 1, 2, 3, 5, 6, 7 and 8 below are done. 6 is done as far as detection and message; the runbook check belongs to Task 8.

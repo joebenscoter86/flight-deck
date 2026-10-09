@@ -389,6 +389,16 @@
 }
 
 /* Waiting-days badge; overdue must-do cards go red */
-.waiting { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .7; margin-left: .5rem; }
+.waiting { display: inline-block; white-space: nowrap; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .7; margin-left: .5rem; }
 .waiting.overdue { color: #ff3b30; opacity: 1; }
 .overdue-card { border-left-color: #ff3b30 !important; box-shadow: inset 4px 0 0 #ff3b30; }
+
+/* Health banner: what went wrong on the last refresh, until one succeeds */
+.health-banner { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1.5rem; font-size: 13px; line-height: 1.45; border-bottom: 1px solid transparent; }
+.health-banner.hidden { display: none; }
+.health-banner.error { background: rgba(255, 59, 48, .14); border-bottom-color: rgba(255, 59, 48, .5); color: #ffd9d6; }
+.health-banner.error .material-symbols-outlined { color: #ff3b30; }
+.health-banner.warn { background: rgba(255, 190, 60, .10); border-bottom-color: rgba(255, 190, 60, .4); color: #ffe9c2; }
+.health-banner.warn .material-symbols-outlined { color: #ffbe3c; }
+.health-banner p { margin: 0 0 .2rem; }
+.health-banner .health-when { opacity: .6; font-size: 11px; margin: .25rem 0 0; }

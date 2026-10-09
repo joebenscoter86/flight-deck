@@ -131,6 +131,8 @@
 
   <!-- Main Content -->
   <main id="page-todo" data-page="todo" class="lg:pl-64 pt-16 min-h-screen">
+    <!-- Stays up until a refresh succeeds: sign-in lapsed, a source not connected, etc. -->
+    <div id="health-banner" class="health-banner hidden" role="status"></div>
     <!-- Hero + Header-bar group (shader canvas sits behind both) -->
     <div id="hero-wrapper" class="relative overflow-hidden">
       <!-- Animated shader background: scoped to this wrapper, low opacity so text pops -->

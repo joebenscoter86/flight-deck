@@ -55,13 +55,20 @@ try { execSync(`launchctl unload "${PLIST_PATH}"`, { stdio: 'pipe' }); } catch {
 execSync(`launchctl load "${PLIST_PATH}"`);
 console.log('Loaded launchd agent.');
 
-// Wait a sec, then verify
-await new Promise(r => setTimeout(r, 1500));
+// The first start can take a few seconds; wait for the server to report its port.
 const statePath = path.join(STATE_DIR, 'state.json');
-if (fs.existsSync(statePath)) {
-  const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+const startedAfter = Date.now() - 1000;
+let state = null;
+for (let i = 0; i < 40 && !state; i++) {
+  await new Promise(r => setTimeout(r, 500));
+  try {
+    const s = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    if (Date.parse(s.started_at) >= startedAfter) state = s;
+  } catch {}
+}
+if (state) {
   console.log(`Server is up on http://localhost:${state.port} (pid ${state.pid})`);
 } else {
-  console.error('Server did not write state.json. Check ' + path.join(STATE_DIR, 'server.log'));
+  console.error('Server did not start within 20 seconds. Check ' + path.join(STATE_DIR, 'server.log'));
   process.exit(1);
 }

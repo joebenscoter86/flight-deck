@@ -29,7 +29,7 @@ Claude downloads the app, asks you three or four questions (your name, your emai
 - **Drag things where they belong.** When Flight Deck puts something in the wrong column, drag it. After about ten of those it writes its own rules for how you sort things, and uses them from then on.
 - **Check things off, add notes, add your own tasks.** Refreshing never undoes your edits and never brings back something you finished.
 - **Open in Claude.** Each item has a button that opens Claude with that item ready to work on.
-- **If something stops working, the page tells you.** A bar across the top says what went wrong (for example, Claude got signed out) and what to do. It goes away once the list updates again.
+- **If something stops working, the page tells you.** A bar across the top says what went wrong (for example, Claude got signed out) and what to do. It also has a **Refresh through Claude** button: press it, Claude opens with a message ready, you press Enter, and your list updates anyway.
 
 ## What leaves your computer
 
@@ -89,6 +89,7 @@ Settings are read from the first of: `$FLIGHT_DECK_CONFIG`, `~/.flight-deck/conf
 | `activeProjects` | Names of the projects you care about. Used to match GuideCX projects, tag tasks, and generate meeting prep. |
 | `excludeKeywords` | Task names matching any of these (case-insensitive) are never surfaced. Leave `[]` for none. |
 | `claudePull.enabled` | Turn the headless Slack/Gmail/Calendar pull on or off. |
+| `claudePull.mode` | `auto` (default): the app refreshes by itself every hour. `manual`: for a Mac without the `claude` command-line tool; the Refresh button opens the Claude app and you press Enter there. |
 | `claudePull.model` | Model the hourly pull uses. Default `sonnet`, to go easy on your plan's usage limits. |
 | `claudePull.sources` | Which of `calendar`, `gmail`, `slack` to read. Default all three. One that is not connected in Claude is skipped. |
 | `extraSources` | Other connectors you already have in Claude, as `[{ "name": "Monday.com", "instructions": "Items assigned to me that are overdue or due this week" }]`. No API key needed. |

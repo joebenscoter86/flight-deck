@@ -4,7 +4,7 @@
 const HELP = 'In the Claude app, open the Code tab, choose the flight-deck folder and say: "Flight Deck could not update."';
 
 export function refreshHealth(result) {
-  if (!result) return { level: 'ok', messages: [], at: null };
+  if (!result) return { level: 'ok', messages: [], at: null, offerManual: false };
   const messages = [];
   let level = 'ok';
 
@@ -21,5 +21,6 @@ export function refreshHealth(result) {
     if (level === 'ok') level = 'warn';
     messages.push({ text: `${m}. Until then your list leaves it out.` });
   }
-  return { level, messages, at: result.finished_at || result.started_at || null };
+  // When the background refresh failed, the page offers the manual route instead.
+  return { level, messages, at: result.finished_at || result.started_at || null, offerManual: level === 'error' };
 }

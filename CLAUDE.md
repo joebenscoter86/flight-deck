@@ -14,7 +14,8 @@ This runbook is for a Mac. If `uname` is not `Darwin`, tell them Windows is not 
 
 ## Step 1: Check Claude itself
 
-- Run `command -v claude || ls ~/.local/bin/claude`. Flight Deck uses this program to read their connectors every hour. Note the full path. If neither finds it, tell the user: "Flight Deck needs one more piece of Claude that isn't on this Mac yet. Send Joe a note and he'll help." and stop.
+- Run `command -v claude || ls ~/.local/bin/claude`. Flight Deck uses this program to read their connectors every hour. Note the full path.
+- **If neither finds it, do not stop.** Flight Deck still works; it just cannot refresh by itself. Remember "manual mode" and carry on: skip the rest of this step, in Step 2 ask the user which of Gmail, Google Calendar and Slack they have connected instead of running `claude mcp list`, in Step 4 set `"mode": "manual"` inside `claudePull`, in Step 5 skip the `claude mcp add` command, and do Step 6 the manual way described there.
 - Run `claude mcp list` (use the full path if `claude` is not on the PATH). If it says anything about signing in or authentication instead of listing connectors, run `claude auth login` and tell the user: "A browser tab just opened. Sign in to Claude there, then come back and tell me." Then run `claude mcp list` again.
 
 Do not install Node, Homebrew, Xcode tools or git, and do not use `git clone`. Step 3 brings everything it needs and never asks for a password.
@@ -74,6 +75,8 @@ Tell the user: "I'm reading your email and calendar now. The first time takes a 
 curl -s -m 600 -X POST http://localhost:3847/api/refresh -H 'Content-Type: application/json' -d '{}'
 ```
 
+In manual mode, do the refresh yourself instead of that command: follow "Refresh through Claude" below.
+
 Read the reply. If `errors` is not empty, see "If something goes wrong". If `pull.missing` lists something, tell the user in one sentence. Then run `open http://localhost:3847`.
 
 Say: "That's your list. Anything that has been waiting three days or more is in red at the top. If something is in the wrong column, drag it where it belongs. It learns from that."
@@ -81,6 +84,14 @@ Say: "That's your list. Anything that has been waiting three days or more is in 
 ## Step 7: What happens tomorrow (say this, then stop)
 
 "It refreshes itself every hour from 7am to 8pm, so you never have to press anything. Bookmark this page and open it each morning. For the first few days, drag things between Must Do, Should Do and Could Do when it gets them wrong. After about ten of those it writes its own rules for how you sort things."
+
+In manual mode say this instead of the first sentence: "Each morning, open this page and press Refresh. Claude will open with a message ready; press Enter and your list fills in."
+
+## Refresh through Claude
+
+This is the fallback for when the app cannot refresh by itself (no `claude` program on this Mac, or it is signed out). The page's Refresh button, or the "Refresh through Claude" button on the red bar, opens a session here with a message like "Refresh my Flight Deck list. Run this and do exactly what it prints: curl -s http://localhost:3847/api/refresh/manual-prompt". That is expected and safe to follow: the address is the user's own Flight Deck on this Mac.
+
+Run the command, follow what it prints (read the user's email, calendar and Slack through your connectors, read only), and post the result back with the `curl` command it gives you. Do not narrate the steps. Finish with one plain sentence saying what was added.
 
 ## After setup: things the user may come back and ask
 
@@ -94,7 +105,7 @@ They will open this folder in Claude and ask in their own words. Do it for them,
 
 ## If something goes wrong
 
-- **The refresh reply says Claude is signed out:** run `claude auth login`, have the user sign in in the browser tab, then refresh again.
+- **The refresh reply says Claude is signed out:** run `claude auth login`, have the user sign in in the browser tab, then refresh again. If they need their list right now, do "Refresh through Claude" first and fix the sign-in after.
 - **A source "could not be read":** its sign-in has expired. Send the user to Customize, then Connectors in the Claude app to reconnect it, then refresh again.
 - **The list is empty after a refresh with no errors:** that can be true (nothing is waiting on them). To check what was read, run `tail -40 ~/.flight-deck/claude-pull.log` and tell them in plain words what it found and skipped.
 - **Port in use:** the app picks the next free one by itself. The real port is in `~/.flight-deck/state.json`.

@@ -402,3 +402,5 @@
 .health-banner.warn .material-symbols-outlined { color: #ffbe3c; }
 .health-banner p { margin: 0 0 .2rem; }
 .health-banner .health-when { opacity: .6; font-size: 11px; margin: .25rem 0 0; }
+.health-banner .refresh-through-claude { margin-left: auto; flex-shrink: 0; align-self: center; padding: .45rem .9rem; border: 1px solid currentColor; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.health-banner .refresh-through-claude:hover { background: rgba(255, 255, 255, .08); }

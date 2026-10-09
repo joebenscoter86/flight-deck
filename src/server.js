@@ -33,7 +33,15 @@ async function findFreePort(start) {
 
 const port = await findFreePort(config.defaultPort);
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
+// A body that is not valid JSON gets a readable answer, not Express's HTML error page
+// (the caller is often a Claude session that has to understand what went wrong).
+app.use((err, req, res, next) => {
+  if (err?.type === 'entity.parse.failed') {
+    return res.status(400).json({ ok: false, error: 'That was not valid JSON. Send one JSON object.' });
+  }
+  next(err);
+});
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname, '..', 'web')));

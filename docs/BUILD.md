@@ -59,7 +59,8 @@ The prompt names no connector tools; the session finds them with ToolSearch. Do 
 - **Demo mode (done 2026-10-08).** `scripts/flightdeck demo` seeds a made-up list (`scripts/seed-demo.js`) in `~/.flight-deck-demo` on port 3900. Used for the README screenshot and Joe's reel. Keep the seed data fictional.
 - **Usage per pull on a clean account:** Joe chose to punt on measuring this for now.
 - **launchd and `claude`.** `scripts/install.js` now puts `~/.local/bin` on the agent's PATH. Whether a desktop-only user has a `claude` binary there at all is still Phase 0 Step 2.
-- **PR.** All of this is on `claude/docs-review-planning-01c3db`, PR 2. The README prompt and the runbook's download URL point at `main`, so nothing reaches a viewer until it is merged.
+- **Refresh through Claude (done 2026-10-09).** The fallback for a signed-out or missing CLI. The page opens the Claude app by deep link with a short prompt; that session fetches `GET /api/refresh/manual-prompt`, reads the connectors with the app's own sign-in, and posts the result to `POST /api/refresh/ingest`, which runs the same validation and dedup as the background pull. `claudePull.mode: "manual"` makes the main Refresh button do this and stops the hourly pull; the runbook sets it when it finds no CLI, which replaces the old "send Joe a note" dead end. This session is a normal Claude session, not the locked-down one: it is told to read only, with the user watching. Verified by following the generated instructions by hand against a scratch server. Not yet verified: the button clicked for real in the Claude app, and a whole setup in manual mode.
+- **PRs.** PR 2 (everything up to demo mode) is merged. Work after that is on the same branch in a second PR.
 - Fixes 1, 2, 3, 5, 6, 7 and 8 below are done. 6 is done as far as detection and message; the runbook check belongs to Task 8.
 
 ## Known plan fixes

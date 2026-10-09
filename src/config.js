@@ -91,6 +91,10 @@ export const config = {
   // Headless-Claude pull (Slack / Gmail / Calendar via your claude.ai connectors)
   claudeBin: process.env.CLAUDE_BIN || user.claudeBin || 'claude',
   claudePullEnabled: user.claudePull?.enabled !== false,
+  // "auto": the server pulls by itself every hour with the claude command-line tool.
+  // "manual": that tool is not available, so the Refresh button opens the Claude app
+  // and the user presses Enter there. Setup picks this when it finds no CLI.
+  claudePullMode: user.claudePull?.mode === 'manual' ? 'manual' : 'auto',
   // Model for the hourly pull. It runs many times a day against the user's plan
   // limits, so the default is the mid-size model, not the account's default.
   claudePullModel: typeof user.claudePull?.model === 'string' && user.claudePull.model.trim()

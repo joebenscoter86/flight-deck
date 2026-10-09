@@ -490,10 +490,31 @@ async function loadAll() {
 /* ---------- Health banner ---------- */
 // Shows what went wrong on the last refresh and stays until one succeeds. Hourly
 // refreshes run with nobody watching, so a toast is not enough.
+let refreshMode = 'auto';
+
+// Fallback refresh: open the Claude app with the refresh prompt filled in. The
+// user presses Enter there; the list updates here by itself when Claude is done.
+async function refreshThroughClaude() {
+  try {
+    const res = await api('/api/refresh/manual-link');
+    window.location.href = res.launch_uri;
+    toast('Claude is opening. Press Enter there and your list will update here.');
+  } catch {
+    toast('Could not open Claude. Is the Claude app installed?');
+  }
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('.refresh-through-claude')) refreshThroughClaude();
+});
+
 async function loadHealth() {
   const el = document.getElementById('health-banner');
   let health;
-  try { ({ health } = await api('/api/refresh/status')); } catch { return; }
+  try {
+    const status = await api('/api/refresh/status');
+    health = status.health;
+    refreshMode = status.mode || 'auto';
+  } catch { return; }
   if (!health || health.level === 'ok') { el.classList.add('hidden'); el.innerHTML = ''; return; }
   const when = health.at ? new Date(health.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
   el.className = `health-banner ${health.level}`;
@@ -502,12 +523,15 @@ async function loadHealth() {
     <div class="health-text">
       ${health.messages.map(m => `<p${m.detail ? ` title="${escapeHtml(m.detail)}"` : ''}>${escapeHtml(m.text)}</p>`).join('')}
       ${when ? `<p class="health-when">Last tried at ${escapeHtml(when)}</p>` : ''}
-    </div>`;
+    </div>
+    ${health.offerManual ? '<button class="refresh-through-claude">Refresh through Claude</button>' : ''}`;
 }
 
 /* ---------- Refresh ---------- */
 document.getElementById('refresh-btn').addEventListener('click', async () => {
   const btn = document.getElementById('refresh-btn');
+  // On a Mac where the background refresh cannot run, this button is the refresh.
+  if (refreshMode === 'manual') return refreshThroughClaude();
   btn.disabled = true;
   btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span> REFRESHING...';
   try {

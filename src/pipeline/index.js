@@ -18,7 +18,9 @@ try { lastResult = JSON.parse(fs.readFileSync(LAST_PATH, 'utf8')); } catch {}
 export function isRunning() { return inProgress; }
 export function lastSummary() { return lastResult; }
 
-export async function runRefresh({ skipClaudePull = false } = {}) {
+// `manualResult` is a pull result handed in by a Claude app session (the manual
+// fallback); it is ingested in place of running the background pull.
+export async function runRefresh({ skipClaudePull = false, manualResult = null } = {}) {
   if (inProgress) throw new Error('Refresh already in progress');
   inProgress = true;
   emit('refresh.started', { at: new Date().toISOString() });
@@ -84,10 +86,12 @@ export async function runRefresh({ skipClaudePull = false } = {}) {
 
     // 3, 6, 7 — headless Claude pull for Slack / Gmail / Calendar.
     // Skipped if disabled in config, or when a caller opts out (native-only run).
-    if (!skipClaudePull && config.claudePullEnabled) {
+    if (manualResult || (!skipClaudePull && config.claudePullEnabled && config.claudePullMode === 'auto')) {
       try {
         const claudeMod = await import('./claude-pull.js');
-        const pull = await claudeMod.runClaudePull(today);
+        const pull = manualResult
+          ? claudeMod.ingestManualResult(today, manualResult)
+          : await claudeMod.runClaudePull(today);
         result.added.claude = pull.added;
         result.pull = { sources: pull.sources, missing: pull.missing };
       } catch (e) {
@@ -98,8 +102,11 @@ export async function runRefresh({ skipClaudePull = false } = {}) {
 
     updateList(today, { last_refreshed_at: new Date().toISOString() });
     result.finished_at = new Date().toISOString();
-    lastResult = result;
-    try { fs.writeFileSync(LAST_PATH, JSON.stringify(result, null, 2)); } catch {}
+    // An hourly run in manual mode reads nothing, so it must not wipe out what the
+    // last real refresh reported.
+    const readSomething = manualResult || result.pull || result.errors.length || !lastResult;
+    if (readSomething) lastResult = result;
+    try { fs.writeFileSync(LAST_PATH, JSON.stringify(lastResult, null, 2)); } catch {}
     emit('refresh.completed', result);
     return result;
   } finally {

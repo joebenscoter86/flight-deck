@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Hit List</title>
+  <title>Flight Deck</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -71,7 +71,7 @@
 
   <!-- Top Nav Bar -->
   <nav id="top-nav" class="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-[#10141a]/80 backdrop-blur-xl border-b border-[#3a4a49]/15 shadow-[0_0_20px_rgba(0,251,251,0.06)]">
-    <div class="text-2xl font-bold tracking-wider text-[#00fbfb] font-headline uppercase cursor-pointer active:scale-95">Hit List</div>
+    <div class="text-2xl font-bold tracking-wider text-[#00fbfb] font-headline uppercase cursor-pointer active:scale-95">Flight Deck</div>
     <div class="flex items-center gap-8">
       <div class="hidden md:flex items-center gap-6 text-xs font-label uppercase tracking-widest">
         <a id="nav-todo" class="page-nav-link active text-[#00fbfb] border-b-2 border-[#00fbfb] hover:text-[#fe00fe] transition-colors duration-300" href="#/" data-page="todo">To-Do</a>
@@ -131,6 +131,8 @@
 
   <!-- Main Content -->
   <main id="page-todo" data-page="todo" class="lg:pl-64 pt-16 min-h-screen">
+    <!-- Stays up until a refresh succeeds: sign-in lapsed, a source not connected, etc. -->
+    <div id="health-banner" class="health-banner hidden" role="status"></div>
     <!-- Hero + Header-bar group (shader canvas sits behind both) -->
     <div id="hero-wrapper" class="relative overflow-hidden">
       <!-- Animated shader background: scoped to this wrapper, low opacity so text pops -->
@@ -142,7 +144,7 @@
       </div>
       <div class="relative z-10 max-w-4xl">
         <h1 id="header-title" class="text-6xl md:text-8xl font-headline font-bold text-primary-fixed leading-none tracking-tighter mb-4">
-          HIT LIST
+          FLIGHT DECK
         </h1>
         <p class="text-secondary font-label italic text-lg md:text-xl max-w-2xl border-l-2 border-secondary pl-6 py-2">
           "It is not that we have a short time to live, but that we waste a great deal of it."<br>

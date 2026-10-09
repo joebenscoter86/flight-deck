@@ -13,6 +13,9 @@ import { mountMcp } from './mcp/tools.js';
 import { refreshRouter } from './routes/refresh.js';
 import { askClaudeRouter } from './routes/ask-claude.js';
 import warpLogRouter from './routes/warp-log.js';
+import { triageRouter } from './routes/triage.js';
+import { startScheduler } from './scheduler.js';
+import { runRefresh } from './pipeline/index.js';
 initDb();
 
 async function findFreePort(start) {
@@ -41,6 +44,7 @@ app.use('/api/summary', summaryRouter);
 app.use('/api/refresh', refreshRouter);
 app.use('/api/ask-claude', askClaudeRouter);
 app.use('/api/warp-log', warpLogRouter);
+app.use('/api/triage', triageRouter);
 
 app.get('/api/events', eventsHandler);
 
@@ -52,5 +56,12 @@ app.listen(port, '127.0.0.1', () => {
   fs.writeFileSync(config.statePath, JSON.stringify({
     port, pid: process.pid, started_at: new Date().toISOString()
   }, null, 2));
-  console.log(`hit-list listening on http://localhost:${port}`);
+  console.log(`flight-deck listening on http://localhost:${port}`);
+});
+
+startScheduler({
+  everyMinutes: config.refresh.everyMinutes,
+  quietHours: config.refresh.quietHours,
+  timezone: config.timezone,
+  run: () => runRefresh(),
 });

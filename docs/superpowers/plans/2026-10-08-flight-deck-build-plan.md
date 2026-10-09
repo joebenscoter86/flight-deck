@@ -690,6 +690,24 @@ git commit -m "Open tasks in Claude Desktop via the documented claude://code/new
 
 - [ ] **Step 3: Commit** `git commit -am "Beginner-first config example; derive orgDomain from email"`.
 
+### Task 7b: Sources scaffold (core three plus any connected tool)
+
+Added 2026-10-08. Spec section 3a. Steps are an outline, not finished code like the tasks above; write the tests first.
+
+**Files:**
+- Create: `src/sources.js`, `tests/sources.test.js`
+- Modify: `src/config.js` (`claudePull.sources`, `extraSources`), `config.example.json`, `src/pipeline/claude-pull.js` (prompt assembled from enabled sources), `web/app.js` (source badge fallback), `src/routes/warp-log.js` if it groups by a fixed source list
+
+**Interfaces:**
+- Produces: `config.claudePullSources` (subset of `['calendar', 'gmail', 'slack']`, default all three); `config.extraSources` (array of `{ name, slug, instructions }`, slug derived from name: lower case, non-alphanumerics to `-`); `buildExtraSourceStep(source, port, stepNumber)` returning the prompt text for one extra source.
+
+- [ ] **Step 1: Failing tests** for slug derivation, for config dropping malformed `extraSources` entries, and for `buildExtraSourceStep` (contains the name, the instructions, `"source":"<slug>"`, and the "if you have no tools for this, say so and move on" line).
+- [ ] **Step 2: Config.** Parse `claudePull.sources` and `extraSources`; add both to `config.example.json` under `_advanced` (`"extraSources": []`).
+- [ ] **Step 3: Prompt.** Split `buildPrompt`'s Calendar, Slack and Gmail steps into separate functions and include only those in `config.claudePullSources`. Append one generated step per extra source. The SUMMARY line gains an `extra` object keyed by slug.
+- [ ] **Step 4: UI.** Find every place the web UI maps a source to a label, icon or color and give unknown sources a neutral badge showing the name. Check the Warp Log's by-source grouping the same way.
+- [ ] **Step 5: Manual check** on Joe's Mac with one real extra connector: add an `extraSources` entry, refresh, confirm items arrive with the right source and a second refresh adds no duplicates.
+- [ ] **Step 6: Commit.** Task 8's runbook then gains the "I can also see X and Y connected" question and the drop-a-missing-core-source behavior from spec 3a.
+
 ---
 
 ## Phase 2: depends on Phase 0 results

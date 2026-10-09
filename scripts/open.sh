@@ -1,7 +1,9 @@
 #!/bin/bash
-PORT=$(jq -r .port "$HOME/.hit-list/state.json" 2>/dev/null)
+STATE="$HOME/.flight-deck/state.json"
+[ -f "$STATE" ] || STATE="$HOME/.hit-list/state.json"
+PORT=$(jq -r .port "$STATE" 2>/dev/null)
 if [ -z "$PORT" ] || [ "$PORT" = "null" ]; then
-  echo "hit-list server not running"
+  echo "flight-deck server not running"
   exit 1
 fi
 open "http://localhost:$PORT"

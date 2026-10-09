@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { runRefresh, isRunning, lastSummary } from '../pipeline/index.js';
+import { refreshHealth } from '../health.js';
 
 export const refreshRouter = Router();
 
@@ -16,5 +17,5 @@ refreshRouter.post('/', async (req, res) => {
 });
 
 refreshRouter.get('/status', (req, res) => {
-  res.json({ in_progress: isRunning(), last: lastSummary() });
+  res.json({ in_progress: isRunning(), last: lastSummary(), health: refreshHealth(lastSummary()) });
 });

@@ -53,6 +53,41 @@ MCP). Changes:
 3. Does the viewer's **work** account have Claude Code enabled? Team/Enterprise admins can turn
    it off while leaving Cowork on. This is a real fallback case, not a hypothetical.
 
+## 3a. Sources: three core, plus whatever is already connected
+
+Added 2026-10-08 after Joe's note on audience. Status: confirmed by Joe 2026-10-08 (core three expected, setup carries on without one).
+
+The person installing this is a non-technical knowledge worker on a cold start. Their day is
+Gmail, Slack and Google Calendar, so those are the **core three** and setup expects them. But the
+repo is a scaffold for the user's own tools: if they already have another connector approved in
+Claude (Monday.com, Asana, Linear, Notion, HubSpot), their list should pull from it too, with no
+code change and no API key.
+
+- **Core three are expected, not fatal.** The runbook checks each of Calendar, Gmail and Slack and
+  walks the user to Customize > Connectors for any that are off. If one cannot be turned on (the
+  common case: work has not approved Slack), setup drops it, says so in one sentence, and
+  finishes. `claudePull.sources` (default `["calendar", "gmail", "slack"]`) records which are on.
+  Nobody hits a dead end because one of three is missing.
+- **Extra sources are config, not code.** `extraSources` is a list of
+  `{ "name": "Monday.com", "instructions": "Items assigned to me that are overdue or due this week" }`.
+  For each one the headless pull prompt gets a generated step: use whatever connector tools you
+  have for `<name>`, follow the instructions, and POST each item as a task with `source` set to a
+  slug of the name, `external_id` set to the item's stable id in that tool, and `source_url` if
+  there is one. If no tools for `<name>` are visible, say so in the summary and move on. Dedup,
+  tiers, corrections and waiting-days then work unchanged, because they key on `source` and
+  `external_id`.
+- **Setup offers them, once.** After the five questions, the runbook has Claude look at which
+  connectors it can see in the session and ask a single question: "I can also see X and Y
+  connected. Want your list to pull from those too?" For each yes it writes an `extraSources`
+  entry with a sensible default instruction ("things assigned to me or waiting on me"). The user
+  can change it later by telling Claude what they want from that tool.
+- **The UI must not assume a fixed set of sources.** Any source badge, filter or Warp Log grouping
+  renders an unknown source by its name.
+- **GuideCX and Fathom are legacy.** They are direct-API sources from Joe's previous job. They
+  stay in the code, off by default, power-user section only. New sources go through connectors.
+- **Depends on unknown 2 below** exactly as the core three do: if headless `claude -p` cannot see
+  connectors, neither path works and the refresh trigger changes for both.
+
 ## 4. Fallback path: folder mode (Cowork only, no server)
 
 For viewers whose organization blocks Claude Code, or if unknown 2 fails outright. Spec'd here

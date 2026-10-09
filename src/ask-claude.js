@@ -1,8 +1,12 @@
 /**
  * ask-claude.js
- * Builds prompts and launch URIs for opening a task in Claude Code.
+ * Builds prompts and launch URIs for opening a task in Claude Desktop.
  */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
+
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // Maps a source + external_id to a fetch hint string.
 const SOURCE_HINT_MAP = {
@@ -94,15 +98,18 @@ then ask the user if they want you to: (a) go ahead with that, (b) dig up
 more context first, or (c) do something else entirely.
 
 When the user is done working this task, offer to update or close it via the
-hit-list MCP server (todo_update_task to append notes, todo_mark_done
+flight-deck MCP server (todo_update_task to append notes, todo_mark_done
 to complete it). Keep the to-do list current.`;
 }
 
 /**
- * Build an antigravity:// launch URI from a prompt string.
+ * Deep link into Claude Desktop's Code tab with the prompt prefilled (the user
+ * presses Enter). Documented at support.claude.com "Open Claude Desktop with a link".
+ * Built with encodeURIComponent, not URLSearchParams, so spaces are %20 and never +.
  * @param {string} prompt
+ * @param {string} [folder] absolute path the session opens in
  * @returns {string}
  */
-export function buildLaunchUri(prompt) {
-  return `antigravity://anthropic.claude-code/open?prompt=${encodeURIComponent(prompt)}`;
+export function buildLaunchUri(prompt, folder = REPO_ROOT) {
+  return `claude://code/new?q=${encodeURIComponent(prompt)}&folder=${encodeURIComponent(folder)}`;
 }

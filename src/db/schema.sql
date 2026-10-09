@@ -52,3 +52,14 @@ CREATE TABLE IF NOT EXISTS meetings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_meetings_list_date ON meetings(list_date);
+
+CREATE TABLE IF NOT EXISTS corrections (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  task_id       INTEGER,
+  task          TEXT NOT NULL,
+  source        TEXT,
+  from_priority TEXT NOT NULL,
+  to_priority   TEXT NOT NULL,
+  at            TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_corrections_at ON corrections(at);
